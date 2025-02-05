@@ -1,5 +1,5 @@
 import { Twitter, Instagram } from "lucide-react";
-import { TiTiktok } from "react-icons/ti";
+import { FaTiktok } from "react-icons/fa6";
 
 const Footer = () => {
   return (
@@ -38,7 +38,7 @@ const Footer = () => {
           <p className="text-sm mb-4 md:mb-0">©2025 Fkitt. All Rights Reserved.</p>
           <div className="flex space-x-6">
             <a href="#" className="text-white hover:text-[#D6BCFA]">
-              <TiTiktok className="w-6 h-6" />
+              <FaTiktok className="w-6 h-6" />
             </a>
             <a href="#" className="text-white hover:text-[#D6BCFA]">
               <Instagram className="w-6 h-6" />
