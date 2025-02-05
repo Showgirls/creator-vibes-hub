@@ -79,6 +79,11 @@ const Index = () => {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8 glass-card p-8 rounded-lg">
         <div className="text-center">
+          <img 
+            src="/lovable-uploads/ed9037d0-d55e-4bd5-b525-febf2587d57b.png" 
+            alt="Creator Space Logo" 
+            className="h-16 mx-auto mb-6"
+          />
           <h2 className="text-3xl font-bold">{isLogin ? "Login" : "Sign Up"}</h2>
           <p className="mt-2 text-muted-foreground">
             {isLogin
