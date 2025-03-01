@@ -143,7 +143,7 @@ const Home = () => {
                 Creators Wanted!
               </h2>
               <p className="text-lg text-[#D6BCFA] leading-relaxed">
-                Models can apply directly in the members area and start earning from our unique rev-share system.
+                Models can apply directly in the members area and start earning.
               </p>
             </div>
           </div>
