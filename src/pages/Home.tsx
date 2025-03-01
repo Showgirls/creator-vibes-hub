@@ -146,6 +146,24 @@ const Home = () => {
                 Models can apply directly in the members area and start earning.
               </p>
             </div>
+            
+            {/* Duplicate action buttons after creators section */}
+            <div className="flex flex-col sm:flex-row justify-center gap-6 mt-8">
+              <Link to="/register" className="w-full sm:w-auto flex-1">
+                <Button size="lg" className="w-full bg-[#9b87f5] hover:bg-[#7E69AB] text-white px-8 py-6 text-lg h-auto">
+                  Register Now
+                </Button>
+              </Link>
+              <Link to="/login" className="w-full sm:w-auto flex-1">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="w-full border-[#9b87f5] text-[#D6BCFA] hover:bg-[#9b87f5]/10 px-8 py-6 text-lg h-auto"
+                >
+                  Login
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
