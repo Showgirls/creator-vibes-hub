@@ -81,7 +81,7 @@ const Home = () => {
           
           {/* Countdown timer */}
           <div className="bg-[#2D3748]/50 rounded-lg p-6 mb-10 inline-block">
-            <p className="text-white text-lg mb-2">Limited Time Offer - Until May 8th 2025</p>
+            <p className="text-white text-lg mb-2">Doors open in:</p>
             <div className="flex justify-center gap-4 text-[#9b87f5]">
               <div className="text-center">
                 <div className="text-5xl font-bold">{formatNumber(timeLeft.days)}</div>
