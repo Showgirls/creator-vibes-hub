@@ -13,8 +13,8 @@ const Home = () => {
   });
 
   useEffect(() => {
-    // Set target date: May 8th 2025 at 8pm UTC
-    const targetDate = new Date('2025-05-08T20:00:00Z');
+    // Set target date: April 28th 2025 at 8pm UTC
+    const targetDate = new Date('2025-04-28T20:00:00Z');
     
     const calculateTimeLeft = () => {
       const now = new Date();
@@ -81,7 +81,7 @@ const Home = () => {
           
           {/* Countdown timer */}
           <div className="bg-[#2D3748]/50 rounded-lg p-6 mb-10 inline-block">
-            <p className="text-white text-lg mb-2">Doors open in:</p>
+            <p className="text-white text-xl mb-2 font-bold">Intro Offer ends in:</p>
             <div className="flex justify-center gap-4 text-[#9b87f5]">
               <div className="text-center">
                 <div className="text-5xl font-bold">{formatNumber(timeLeft.days)}</div>
