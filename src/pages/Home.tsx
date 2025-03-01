@@ -2,8 +2,59 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
+import { useEffect, useState } from "react";
 
 const Home = () => {
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
+
+  useEffect(() => {
+    // Set target date: May 8th 2025 at 8pm UTC
+    const targetDate = new Date('2025-05-08T20:00:00Z');
+    
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const difference = targetDate.getTime() - now.getTime();
+      
+      if (difference <= 0) {
+        // Timer expired
+        setTimeLeft({
+          days: 0,
+          hours: 0,
+          minutes: 0,
+          seconds: 0
+        });
+        return;
+      }
+      
+      // Calculate time units
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+      
+      setTimeLeft({ days, hours, minutes, seconds });
+    };
+    
+    // Calculate initially
+    calculateTimeLeft();
+    
+    // Update timer every second
+    const timer = setInterval(calculateTimeLeft, 1000);
+    
+    // Cleanup
+    return () => clearInterval(timer);
+  }, []);
+
+  // Format timer values to always show two digits
+  const formatNumber = (num: number) => {
+    return num.toString().padStart(2, '0');
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <div className="flex-1 flex flex-col items-center p-8 bg-gradient-to-b from-[#1A1F2C] to-[#2D3748]">
@@ -28,10 +79,30 @@ const Home = () => {
             enjoy unlimited access while supporting creators like never before!
           </p>
           
-          {/* Timer placeholder - could be replaced with an actual countdown timer */}
+          {/* Countdown timer */}
           <div className="bg-[#2D3748]/50 rounded-lg p-6 mb-10 inline-block">
-            <p className="text-white text-lg">Limited Time Offer</p>
-            <div className="text-4xl font-bold text-[#9b87f5]">48:00:00</div>
+            <p className="text-white text-lg mb-2">Limited Time Offer - Until May 8th 2025</p>
+            <div className="flex justify-center gap-4 text-[#9b87f5]">
+              <div className="text-center">
+                <div className="text-5xl font-bold">{formatNumber(timeLeft.days)}</div>
+                <div className="text-sm">DAYS</div>
+              </div>
+              <div className="text-5xl font-bold">:</div>
+              <div className="text-center">
+                <div className="text-5xl font-bold">{formatNumber(timeLeft.hours)}</div>
+                <div className="text-sm">HOURS</div>
+              </div>
+              <div className="text-5xl font-bold">:</div>
+              <div className="text-center">
+                <div className="text-5xl font-bold">{formatNumber(timeLeft.minutes)}</div>
+                <div className="text-sm">MINS</div>
+              </div>
+              <div className="text-5xl font-bold">:</div>
+              <div className="text-center">
+                <div className="text-5xl font-bold">{formatNumber(timeLeft.seconds)}</div>
+                <div className="text-sm">SECS</div>
+              </div>
+            </div>
           </div>
           
           {/* Action buttons */}
