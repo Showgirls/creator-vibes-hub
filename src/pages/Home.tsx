@@ -36,16 +36,16 @@ const Home = () => {
           
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row justify-center gap-6 mt-4">
-            <Link to="/register">
-              <Button size="lg" className="w-full sm:w-auto bg-[#9b87f5] hover:bg-[#7E69AB] text-white px-8 py-6 text-lg h-auto">
+            <Link to="/register" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full bg-[#9b87f5] hover:bg-[#7E69AB] text-white px-8 py-6 text-lg h-auto">
                 Register Now
               </Button>
             </Link>
-            <Link to="/login">
+            <Link to="/login" className="w-full sm:w-auto">
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="w-full sm:w-auto border-[#9b87f5] text-[#D6BCFA] hover:bg-[#9b87f5]/10 px-8 py-6 text-lg h-auto"
+                className="w-full border-[#9b87f5] text-[#D6BCFA] hover:bg-[#9b87f5]/10 px-8 py-6 text-lg h-auto"
               >
                 Login
               </Button>
