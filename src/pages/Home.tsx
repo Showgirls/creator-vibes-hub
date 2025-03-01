@@ -36,12 +36,12 @@ const Home = () => {
           
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row justify-center gap-6 mt-4">
-            <Link to="/register" className="w-full sm:w-auto">
+            <Link to="/register" className="w-full sm:w-auto flex-1">
               <Button size="lg" className="w-full bg-[#9b87f5] hover:bg-[#7E69AB] text-white px-8 py-6 text-lg h-auto">
                 Register Now
               </Button>
             </Link>
-            <Link to="/login" className="w-full sm:w-auto">
+            <Link to="/login" className="w-full sm:w-auto flex-1">
               <Button 
                 size="lg" 
                 variant="outline" 
