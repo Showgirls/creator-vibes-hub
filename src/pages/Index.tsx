@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -40,9 +40,17 @@ const signupSchema = z.object({
   path: ["confirmPassword"],
 });
 
-const Index = () => {
-  const [isLogin, setIsLogin] = useState(true);
+interface IndexProps {
+  isRegister?: boolean;
+}
+
+const Index = ({ isRegister = false }: IndexProps) => {
+  const [isLogin, setIsLogin] = useState(!isRegister);
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    setIsLogin(!isRegister);
+  }, [isRegister]);
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -65,13 +73,11 @@ const Index = () => {
   });
 
   const onLoginSubmit = (values: z.infer<typeof loginSchema>) => {
-    // For now, we'll just show a success message and redirect
     toast.success("Login successful!");
     navigate("/profile");
   };
 
   const onSignupSubmit = (values: z.infer<typeof signupSchema>) => {
-    // For now, we'll just show a success message and redirect
     toast.success("Account created successfully!");
     navigate("/profile");
   };
