@@ -81,7 +81,7 @@ const Home = () => {
           
           {/* Countdown timer */}
           <div className="bg-[#2D3748]/50 rounded-lg p-6 mb-10 inline-block">
-            <p className="text-white text-lg mb-2">Limited Time Offer - Until May 8th 2025</p>
+            <p className="text-white text-lg mb-2">Doors open in:</p>
             <div className="flex justify-center gap-4 text-[#9b87f5]">
               <div className="text-center">
                 <div className="text-5xl font-bold">{formatNumber(timeLeft.days)}</div>
@@ -121,6 +121,31 @@ const Home = () => {
                 Login
               </Button>
             </Link>
+          </div>
+          
+          {/* New content sections */}
+          <div className="mt-16 space-y-12">
+            {/* First section */}
+            <div className="bg-[#2D3748]/30 rounded-lg p-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                Welcome to FkiTT – The First Revenue-Sharing Adult Platform!
+              </h2>
+              <p className="text-lg text-[#D6BCFA] leading-relaxed">
+                Why pay per creator when you can pay once and access them all? For just one monthly fee, 
+                you unlock unlimited content from every creator on the platform. No extra charges, 
+                no hidden fees—just pure, unrestricted access.
+              </p>
+            </div>
+            
+            {/* Second section */}
+            <div className="bg-[#2D3748]/30 rounded-lg p-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                Creators Wanted!
+              </h2>
+              <p className="text-lg text-[#D6BCFA] leading-relaxed">
+                Models can apply directly in the members area and start earning from our unique rev-share system.
+              </p>
+            </div>
           </div>
         </div>
       </div>
