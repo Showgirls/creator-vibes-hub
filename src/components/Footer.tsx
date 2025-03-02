@@ -1,6 +1,7 @@
 
 import { Twitter, Instagram } from "lucide-react";
 import { FaTiktok } from "react-icons/fa6";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -31,7 +32,7 @@ const Footer = () => {
           <div>
             <ul className="space-y-2">
               <li><a href="#" className="hover:text-[#D6BCFA]">Acceptable Use Policy</a></li>
-              <li><a href="https://fkitt.com/token/" className="hover:text-[#D6BCFA]" target="_blank" rel="noopener noreferrer">Token</a></li>
+              <li><Link to="/token" className="hover:text-[#D6BCFA]">Token</Link></li>
             </ul>
           </div>
         </div>
