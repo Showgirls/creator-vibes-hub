@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
 
@@ -15,10 +14,10 @@ const Token = () => {
         
         {/* Main content area */}
         <div className="w-full max-w-4xl mx-auto space-y-8 sm:space-y-12">
-          {/* What is FkiTTLeroue Token? Section */}
+          {/* What is FkiTT Token? Section - Title updated here */}
           <section className="glass-card p-5 sm:p-10 rounded-lg border-2 border-[#f9166f]">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6">
-              What is FkiTTLeroue Token?
+              What is the FkiTT Token?
             </h1>
             <p className="text-base sm:text-lg text-white mb-8 leading-relaxed">
               The FkiTT Token is the backbone of our ecosystem, designed to empower users and enhance their experience on the platform. 
