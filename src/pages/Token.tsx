@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
 
@@ -90,11 +91,11 @@ const Token = () => {
                   <li><span className="font-semibold">Ticker:</span> $FkiTT</li>
                   <li><span className="font-semibold">Total Supply:</span> 1,000,000,000</li>
                   <li><span className="font-semibold">Freeze:</span> Revoked</li>
-                  <li><span className="font-semibold">Mint:</span> Revoked</li>
                 </ul>
               </div>
               <div>
                 <ul className="space-y-3 text-white">
+                  <li><span className="font-semibold">Mint:</span> Revoked</li>
                   <li><span className="font-semibold">Ownership:</span> Revoked</li>
                   <li><span className="font-semibold">Distribution:</span> Liquidity 100%</li>
                   <li><span className="font-semibold">Liquidity Locked:</span> 100% locked and burned</li>
