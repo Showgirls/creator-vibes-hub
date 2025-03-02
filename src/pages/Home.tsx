@@ -82,7 +82,7 @@ const Home = () => {
           {/* Countdown timer */}
           <div className="bg-[#2D3748]/50 rounded-lg p-6 mb-10 inline-block">
             <p className="text-white text-xl mb-2 font-bold">Intro Offer ends in:</p>
-            <div className="flex justify-center gap-4 text-[#9b87f5]">
+            <div className="flex justify-center gap-4 text-[#f9166f]">
               <div className="text-center">
                 <div className="text-5xl font-bold">{formatNumber(timeLeft.days)}</div>
                 <div className="text-sm">DAYS</div>
@@ -108,7 +108,7 @@ const Home = () => {
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row justify-center gap-6 mt-4">
             <Link to="/register" className="w-full sm:w-auto flex-1">
-              <Button size="lg" className="w-full bg-[#9b87f5] hover:bg-[#7E69AB] text-white px-8 py-6 text-lg h-auto">
+              <Button size="lg" className="w-full bg-[#f9166f] hover:bg-[#d01359] text-white px-8 py-6 text-lg h-auto">
                 Register Now
               </Button>
             </Link>
@@ -116,7 +116,7 @@ const Home = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="w-full border-[#9b87f5] text-[#D6BCFA] hover:bg-[#9b87f5]/10 px-8 py-6 text-lg h-auto"
+                className="w-full border-[#f9166f] text-[#D6BCFA] hover:bg-[#f9166f]/10 px-8 py-6 text-lg h-auto"
               >
                 Login
               </Button>
@@ -150,7 +150,7 @@ const Home = () => {
             {/* Duplicate action buttons after creators section */}
             <div className="flex flex-col sm:flex-row justify-center gap-6 mt-8">
               <Link to="/register" className="w-full sm:w-auto flex-1">
-                <Button size="lg" className="w-full bg-[#9b87f5] hover:bg-[#7E69AB] text-white px-8 py-6 text-lg h-auto">
+                <Button size="lg" className="w-full bg-[#f9166f] hover:bg-[#d01359] text-white px-8 py-6 text-lg h-auto">
                   Register Now
                 </Button>
               </Link>
@@ -158,7 +158,7 @@ const Home = () => {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="w-full border-[#9b87f5] text-[#D6BCFA] hover:bg-[#9b87f5]/10 px-8 py-6 text-lg h-auto"
+                  className="w-full border-[#f9166f] text-[#D6BCFA] hover:bg-[#f9166f]/10 px-8 py-6 text-lg h-auto"
                 >
                   Login
                 </Button>
