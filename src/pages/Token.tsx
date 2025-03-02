@@ -17,17 +17,17 @@ const Token = () => {
         <div className="w-full max-w-4xl mx-auto space-y-8 sm:space-y-12">
           {/* What is FkiTTLeroue Token? Section */}
           <section className="glass-card p-5 sm:p-10 rounded-lg border-2 border-[#f9166f]">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6">
               What is FkiTTLeroue Token?
             </h1>
-            <p className="text-lg sm:text-xl text-[#D6BCFA] mb-8 leading-relaxed">
+            <p className="text-base sm:text-lg text-white mb-8 leading-relaxed">
               The FkiTT Token is the backbone of our ecosystem, designed to empower users and enhance their experience on the platform. 
               As a utility token, payments within the FkiTT platform are made solely with the FkiTT Token. 
               By holding or using the FkiTT Token, users can enjoy seamless integration with the platform while benefiting from a range of incentives. 
               It's more than just a token – it's a key to the FkiTT Network. 
               Join our growing community and leverage the power of the FkiTT Token to maximize your potential.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4 mt-4">
+            <div className="flex flex-col sm:flex-row justify-start gap-4 mt-4">
               <a href="https://fkitt.com" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
                   GET STARTED
@@ -37,7 +37,7 @@ const Token = () => {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="w-full border-[#f9166f] text-[#D6BCFA] hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
+                  className="w-full border-[#f9166f] text-white hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
                 >
                   BUY $LEROUE
                 </Button>
@@ -47,10 +47,10 @@ const Token = () => {
 
           {/* Benefits Section */}
           <section className="glass-card p-5 sm:p-10 rounded-lg border-2 border-[#f9166f]">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
               Benefits of FkiTT Token
             </h2>
-            <p className="text-base sm:text-lg text-[#D6BCFA] mb-6 leading-relaxed">
+            <p className="text-sm sm:text-base text-white mb-6 leading-relaxed">
               The FkiTT Token offers numerous benefits that make it an essential part of our ecosystem. Token holders gain exclusive access to our platform. 
               $FkiTT is the sole payment provider within the network. When a member pays his one monthly fee in $FkiTT Token he has access to all models 
               and creators completely unrestricted. Unlike other platforms where you pay subscriptions to each model/creator. This means the $FkiTT token is 
@@ -60,7 +60,7 @@ const Token = () => {
               and shared success. With its utility-driven design, The FkiTT Token empowers users to get the most out of the platform while enjoying unparalleled 
               advantages within the FkiTT ecosystem.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4 mt-4">
+            <div className="flex flex-col sm:flex-row justify-start gap-4 mt-4">
               <a href="https://fkitt.com" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
                   GET STARTED
@@ -70,7 +70,7 @@ const Token = () => {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="w-full border-[#f9166f] text-[#D6BCFA] hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
+                  className="w-full border-[#f9166f] text-white hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
                 >
                   BUY $LEROUE
                 </Button>
@@ -80,13 +80,13 @@ const Token = () => {
 
           {/* Tokenomics Section */}
           <section className="glass-card p-5 sm:p-10 rounded-lg border-2 border-[#f9166f]">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
               Tokenomics
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <ul className="space-y-3 text-[#D6BCFA]">
+                <ul className="space-y-3 text-white">
                   <li><span className="font-semibold">Name:</span> FkiTT</li>
                   <li><span className="font-semibold">Ticker:</span> $FkiTT</li>
                   <li><span className="font-semibold">Total Supply:</span> 1,000,000,000</li>
@@ -95,7 +95,7 @@ const Token = () => {
                 </ul>
               </div>
               <div>
-                <ul className="space-y-3 text-[#D6BCFA]">
+                <ul className="space-y-3 text-white">
                   <li><span className="font-semibold">Ownership:</span> Revoked</li>
                   <li><span className="font-semibold">Distribution:</span> Liquidity 100%</li>
                   <li><span className="font-semibold">Liquidity Locked:</span> 100% locked and burned</li>
@@ -103,7 +103,7 @@ const Token = () => {
               </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+            <div className="flex flex-col sm:flex-row justify-start gap-4 mt-6">
               <a href="https://fkitt.com/token/contract" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
                   CONTRACT
@@ -113,7 +113,7 @@ const Token = () => {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="w-full border-[#f9166f] text-[#D6BCFA] hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
+                  className="w-full border-[#f9166f] text-white hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
                 >
                   BUY
                 </Button>
@@ -123,10 +123,10 @@ const Token = () => {
 
           {/* Roadmap Section */}
           <section className="glass-card p-5 sm:p-10 rounded-lg border-2 border-[#f9166f]">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
               RoadMap
             </h2>
-            <p className="text-base sm:text-lg text-[#D6BCFA] mb-6 leading-relaxed">
+            <p className="text-sm sm:text-base text-white mb-6 leading-relaxed">
               The FkiTT Token roadmap outlines a strategic plan to build, scale, and accelerate the growth and adoption of our platform and ecosystem. 
               The roadmap is divided into three key phases: Foundation and Community Growth, Scaling Operations and Enhancing Services, and Accelerating
               Growth and Adoption.
@@ -134,7 +134,7 @@ const Token = () => {
               Each phase encompasses specific goals and initiatives designed to achieve our vision of creating a robust, engaged, and sustainable community
               around the FkITT Token.
             </p>
-            <div className="flex justify-center">
+            <div className="flex justify-start">
               <a href="https://fkitt.com/token/paper" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
                   More info
