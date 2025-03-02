@@ -1,7 +1,6 @@
 
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Token = () => {
   return (
@@ -14,10 +13,10 @@ const Token = () => {
           className="h-16 sm:h-28 mb-6 sm:mb-12 mt-4 sm:mt-8"
         />
         
-        {/* Main content container */}
-        <div className="w-full max-w-4xl mx-auto glass-card p-5 sm:p-10 rounded-lg mb-8 sm:mb-12">
+        {/* Main content area */}
+        <div className="w-full max-w-4xl mx-auto space-y-8 sm:space-y-12">
           {/* What is FkiTTLeroue Token? Section */}
-          <section className="mb-12">
+          <section className="glass-card p-5 sm:p-10 rounded-lg border-2 border-[#f9166f]">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
               What is FkiTTLeroue Token?
             </h1>
@@ -47,7 +46,7 @@ const Token = () => {
           </section>
 
           {/* Benefits Section */}
-          <section className="mb-12 bg-[#2D3748]/30 rounded-lg p-5 sm:p-8">
+          <section className="glass-card p-5 sm:p-10 rounded-lg border-2 border-[#f9166f]">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
               Benefits of FkiTT Token
             </h2>
@@ -80,7 +79,7 @@ const Token = () => {
           </section>
 
           {/* Tokenomics Section */}
-          <section className="mb-12 bg-[#2D3748]/30 rounded-lg p-5 sm:p-8">
+          <section className="glass-card p-5 sm:p-10 rounded-lg border-2 border-[#f9166f]">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
               Tokenomics
             </h2>
@@ -123,7 +122,7 @@ const Token = () => {
           </section>
 
           {/* Roadmap Section */}
-          <section className="bg-[#2D3748]/30 rounded-lg p-5 sm:p-8">
+          <section className="glass-card p-5 sm:p-10 rounded-lg border-2 border-[#f9166f]">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
               RoadMap
             </h2>
