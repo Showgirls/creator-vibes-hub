@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
 
@@ -53,7 +54,9 @@ const Token = () => {
               The FkiTT Token offers numerous benefits that make it an essential part of our ecosystem. Token holders gain exclusive access to our platform. 
               $FkiTT is the sole payment provider within the network. When a member pays his one monthly fee in $FkiTT Token he has access to all models 
               and creators completely unrestricted. Unlike other platforms where you pay subscriptions to each model/creator. This means the $FkiTT token is 
-              required to access the platform. Payment into the network is in $FkiTT Token, a portion goes back into the market, the vast majority gets 
+              required to access the platform. 
+              <br /><br />
+              Payment into the network is in $FkiTT Token, a portion goes back into the market, the vast majority gets 
               transferred to SOL and sent to models ($85%) and affiliates (5%), while 5% is for admin and 5% is burned, insuring an ever shrinking supply, 
               which is good new for holders. Holding FkiTT Tokens also provides a stake in the future growth of the ecosystem, fostering a sense of community 
               and shared success. With its utility-driven design, The FkiTT Token empowers users to get the most out of the platform while enjoying unparalleled 
