@@ -29,7 +29,7 @@ const Token = () => {
             </p>
             <div className="flex flex-col sm:flex-row justify-start gap-4 mt-4">
               <a href="https://fkitt.com" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
+                <Button size="lg" className="w-full sm:w-[180px] bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
                   GET STARTED
                 </Button>
               </a>
@@ -37,9 +37,9 @@ const Token = () => {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="w-full border-[#f9166f] text-white hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
+                  className="w-full sm:w-[180px] border-[#f9166f] text-white hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
                 >
-                  BUY $LEROUE
+                  BUY $FkiTT
                 </Button>
               </a>
             </div>
@@ -64,7 +64,7 @@ const Token = () => {
             </p>
             <div className="flex flex-col sm:flex-row justify-start gap-4 mt-4">
               <a href="https://fkitt.com" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
+                <Button size="lg" className="w-full sm:w-[180px] bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
                   GET STARTED
                 </Button>
               </a>
@@ -72,9 +72,9 @@ const Token = () => {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="w-full border-[#f9166f] text-white hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
+                  className="w-full sm:w-[180px] border-[#f9166f] text-white hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
                 >
-                  BUY $LEROUE
+                  BUY $FkiTT
                 </Button>
               </a>
             </div>
@@ -107,7 +107,7 @@ const Token = () => {
             
             <div className="flex flex-col sm:flex-row justify-start gap-4 mt-6">
               <a href="https://fkitt.com/token/contract" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
+                <Button size="lg" className="w-full sm:w-[180px] bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
                   CONTRACT
                 </Button>
               </a>
@@ -115,7 +115,7 @@ const Token = () => {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="w-full border-[#f9166f] text-white hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
+                  className="w-full sm:w-[180px] border-[#f9166f] text-white hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
                 >
                   BUY
                 </Button>
@@ -138,8 +138,8 @@ const Token = () => {
             </p>
             <div className="flex justify-start">
               <a href="https://fkitt.com/token/paper" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
-                  More info
+                <Button size="lg" className="w-full sm:w-[180px] bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
+                  MORE INFO
                 </Button>
               </a>
             </div>
