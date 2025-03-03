@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
+import { Link } from "react-router-dom";
 
 // Login form schema
 const loginSchema = z.object({
@@ -91,6 +92,13 @@ const Index = ({ isRegister = false }: IndexProps) => {
           className="h-24 mb-8"
         />
         <div className="w-full max-w-md space-y-8 glass-card p-8 rounded-lg">
+          <div className="text-right mb-4">
+            <Link to="/login">
+              <Button variant="outline" className="border-[#f9166f] text-white hover:bg-[#f9166f]/10">
+                Member Login
+              </Button>
+            </Link>
+          </div>
           {isLogin ? (
             <Form {...loginForm}>
               <form
