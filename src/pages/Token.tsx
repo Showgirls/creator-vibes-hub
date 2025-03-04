@@ -74,6 +74,23 @@ const Token = () => {
             </div>
           </section>
 
+          {/* How to Buy Section */}
+          <section className="glass-card p-5 sm:p-10 rounded-lg border-2 border-[#f9166f]">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
+              How to Buy
+            </h2>
+            <p className="text-sm sm:text-base text-white mb-6 leading-relaxed">
+              Getting access to FkiTT is quick and easy! First, purchase Solana (SOL) from your preferred exchange with your local currency such as Binance, Coinbase or other. Next, download and set up a Phantom Wallet <a href="https://phantom.com" target="_blank" rel="noopener noreferrer" className="text-[#f9166f] hover:underline">Get Phantom Wallet here</a>. Once set up, log in with Phantom and swap SOL for $FkiTT tokens on the DEX. Finally, use your $FkiTT tokens to pay for your membership and unlock unlimited access to all creators!
+            </p>
+            <div className="flex justify-start">
+              <a href="https://fkitt.com/token/buy" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-[180px] bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
+                  BUY $FkiTT NOW
+                </Button>
+              </a>
+            </div>
+          </section>
+
           {/* Tokenomics Section */}
           <section className="glass-card p-5 sm:p-10 rounded-lg border-2 border-[#f9166f]">
             <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
