@@ -34,9 +34,13 @@ const MemberArea = () => {
       <div className="flex-1 bg-background">
         <div className="container mx-auto px-4 py-12">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
-              Member Area
-            </h1>
+            <div className="flex items-center">
+              <img 
+                src="/lovable-uploads/ed9037d0-d55e-4bd5-b525-febf2587d57b.png" 
+                alt="FkiTT Logo" 
+                className="h-12 md:h-16"
+              />
+            </div>
             <Button 
               variant="outline" 
               className="border-[#f9166f] text-white hover:bg-[#f9166f]/10"
