@@ -60,6 +60,9 @@ const MemberArea = () => {
               <p className="text-foreground mb-6">
                 Use the button below to sign up as a model/creator so you can get started as soon as we go live on April 28th. All models that sign up before April 28th get an additional 3.5% of the total revenue share!
               </p>
+              <p className="text-foreground mb-6">
+                To learn more about becoming a model/creator and to learn the benefits <a href="https://fkitt.com/models" target="_blank" rel="noopener noreferrer" className="text-[#f9166f] hover:underline">CLICK HERE</a>
+              </p>
               <div className="flex justify-start">
                 <a href="https://fkitt.com/model-signup" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
                   <Button 
@@ -81,7 +84,7 @@ const MemberArea = () => {
               </h2>
               <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mb-4">
                 <span className="text-xl font-bold text-[#f9166f]">Limited time only $48</span>
-                <span className="text-muted-foreground">Normal price: $28 per month or $280 per year</span>
+                <span className="text-muted-foreground italic">[Normal price: $28 per month or $280 per year]</span>
               </div>
               <p className="text-muted-foreground mb-6">
                 *Payment is with $FkiTT token. To learn how and where to buy $FkiTT Token 
