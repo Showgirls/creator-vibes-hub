@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Footer from "@/components/Footer";
@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ExternalLink, Copy, Check, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthCheck } from "@/hooks/useAuth";
+import SolanaPayment from "@/components/SolanaPayment";
 
 const MemberArea = () => {
   // Add authentication check
@@ -14,7 +15,18 @@ const MemberArea = () => {
   
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const affiliateLink = "https://fkitt.com/ref/user123";
+  
+  // Token and admin addresses for payment
+  const tokenAddress = "3SXgM5nXZ5HZbhPyzaEjfVu5uShDjFPaM7a8TFg9moFm";
+  const adminAddress = "44o43y41gytnCtJhaENskAYFoZqg5WyMVskMirbK6bZx";
+  
+  useEffect(() => {
+    // Check if user is a premium member
+    const premiumStatus = localStorage.getItem("isPremiumMember") === "true";
+    setIsPremium(premiumStatus);
+  }, []);
   
   const handleCopyLink = () => {
     navigator.clipboard.writeText(affiliateLink);
@@ -27,6 +39,10 @@ const MemberArea = () => {
     localStorage.removeItem("isLoggedIn");
     toast.success("Logged out successfully");
     navigate("/login");
+  };
+  
+  const handlePaymentSuccess = () => {
+    setIsPremium(true);
   };
 
   return (
@@ -50,6 +66,18 @@ const MemberArea = () => {
               Logout
             </Button>
           </div>
+
+          {/* Premium Status Banner (shows only if premium) */}
+          {isPremium && (
+            <div className="mb-8 px-6 py-4 rounded-lg bg-gradient-to-r from-[#f9166f]/20 to-[#f9166f]/5 border border-[#f9166f]/30">
+              <h2 className="text-2xl md:text-3xl font-bold text-[#FFD700]">
+                PREMIUM LIFETIME MEMBER
+              </h2>
+              <p className="text-foreground mt-2">
+                Thank you for your support! You now have lifetime access to all content.
+              </p>
+            </div>
+          )}
 
           {/* Model Sign up Section */}
           <Card className="glass-card mb-12">
@@ -77,31 +105,47 @@ const MemberArea = () => {
           </Card>
 
           {/* Buy Lifetime Membership Section */}
-          <Card className="glass-card mb-12">
-            <CardContent className="p-6 md:p-8">
-              <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
-                Buy Lifetime Membership
-              </h2>
-              <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mb-4">
-                <span className="text-xl font-bold text-[#f9166f]">Limited time only $48</span>
-                <span className="text-muted-foreground italic">[Normal price: $28 per month or $280 per year]</span>
-              </div>
-              <p className="text-muted-foreground mb-6">
-                *Payment is with $FkiTT token. To learn how and where to buy $FkiTT Token 
-                <Link to="/token" className="text-[#D6BCFA] ml-1 hover:underline">
-                  click here
-                </Link>
-              </p>
-              <div className="flex justify-start">
-                <Button 
-                  size="lg" 
-                  className="w-full sm:w-[180px] bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
-                >
-                  BUY NOW
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {!isPremium ? (
+            <Card className="glass-card mb-12">
+              <CardContent className="p-6 md:p-8">
+                <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                  Buy Lifetime Membership
+                </h2>
+                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mb-4">
+                  <span className="text-xl font-bold text-[#f9166f]">Limited time only $48</span>
+                  <span className="text-muted-foreground italic">[Normal price: $28 per month or $280 per year]</span>
+                </div>
+                <p className="text-muted-foreground mb-6">
+                  *Payment is with $FkiTT token. To learn how and where to buy $FkiTT Token 
+                  <Link to="/token" className="text-[#D6BCFA] ml-1 hover:underline">
+                    click here
+                  </Link>
+                </p>
+                <div className="flex justify-start">
+                  <SolanaPayment 
+                    onPaymentSuccess={handlePaymentSuccess}
+                    tokenAddress={tokenAddress}
+                    adminAddress={adminAddress}
+                    className="w-full sm:w-[180px] bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
+                  >
+                    BUY NOW
+                  </SolanaPayment>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="glass-card mb-12">
+              <CardContent className="p-6 md:p-8">
+                <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                  Membership Status
+                </h2>
+                <p className="text-foreground mb-6">
+                  You are a <span className="text-[#FFD700] font-bold">PREMIUM LIFETIME MEMBER</span>. 
+                  Thank you for your support! You have unlimited access to all content on the platform.
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* How it works Section */}
           <Card className="glass-card mb-12">
