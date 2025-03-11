@@ -23,6 +23,7 @@ const SolanaPayment = ({
 }: SolanaPaymentProps) => {
   const [walletConnected, setWalletConnected] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
   // Check if Phantom is installed
   const getProvider = () => {
@@ -43,8 +44,10 @@ const SolanaPayment = ({
       const provider = getProvider();
       if (provider) {
         const response = await provider.connect();
+        const publicKey = response.publicKey.toString();
+        setWalletAddress(publicKey);
         setWalletConnected(true);
-        return response.publicKey.toString();
+        return publicKey;
       }
     } catch (error) {
       console.error("Error connecting wallet:", error);
@@ -66,29 +69,50 @@ const SolanaPayment = ({
       }
       
       // Connect wallet if not already connected
+      let userPublicKey;
       if (!walletConnected) {
-        const connected = await connectWallet();
-        if (!connected) return;
+        userPublicKey = await connectWallet();
+        if (!userPublicKey) return;
+      } else {
+        userPublicKey = walletAddress;
       }
       
       // Use Solana connection
       const connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
       
-      // Create transaction to transfer tokens
-      // Note: This is a simplified version. In production, you would use Token Program
-      // to transfer SPL tokens properly with correct decimals and token accounts
+      toast.info("Preparing transaction...");
       
-      toast.info("Initiating payment...");
-      
-      // In a real implementation, you would:
-      // 1. Create a token transfer instruction
-      // 2. Get the token accounts
-      // 3. Build and send the transaction
-      
-      // Simulating successful payment for demo purposes
-      // In production, you would verify the transaction success
-      setTimeout(() => {
-        setLoading(false);
+      try {
+        // Converting the addresses to PublicKey objects
+        const fromPublicKey = new PublicKey(userPublicKey as string);
+        const toPublicKey = new PublicKey(adminAddress);
+        
+        // Create a simple SOL transfer transaction (as a placeholder)
+        // In a production app, this would be a proper SPL token transfer
+        const transaction = new Transaction().add(
+          SystemProgram.transfer({
+            fromPubkey: fromPublicKey,
+            toPubkey: toPublicKey,
+            lamports: LAMPORTS_PER_SOL * amount / 100, // Converting $48 to SOL equivalent
+          })
+        );
+        
+        // Setting the most recent blockhash
+        const { blockhash } = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = blockhash;
+        transaction.feePayer = fromPublicKey;
+        
+        // Send the transaction to the user's wallet for signing
+        toast.info("Please confirm the transaction in your wallet");
+        const signedTransaction = await provider.signTransaction(transaction);
+        
+        // Send the signed transaction to the network
+        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+        
+        // Wait for transaction confirmation
+        toast.info("Processing payment, please wait...");
+        await connection.confirmTransaction(signature, "confirmed");
+        
         toast.success("Payment successful! You are now a premium member!");
         
         // Save premium status to localStorage
@@ -96,12 +120,15 @@ const SolanaPayment = ({
         
         // Call the success callback
         onPaymentSuccess();
-      }, 2000);
-      
+      } catch (error) {
+        console.error("Transaction error:", error);
+        toast.error("Transaction failed. Please try again.");
+      }
     } catch (error) {
       console.error("Payment error:", error);
-      setLoading(false);
       toast.error("Payment failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
