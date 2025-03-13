@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -112,13 +111,13 @@ const MemberArea = () => {
                   Buy Lifetime Membership
                 </h2>
                 <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mb-4">
-                  <span className="text-xl font-bold text-[#f9166f]">Limited time only $48</span>
+                  <span className="text-xl font-bold text-[#f9166f]">Limited time only $20</span>
                   <span className="text-muted-foreground italic">[Normal price: $28 per month or $280 per year]</span>
                 </div>
                 <p className="text-muted-foreground mb-6">
-                  *Payment is with $FkiTT token. To learn how and where to buy $FkiTT Token 
+                  *Payment is with $SOL (Solana). Make sure you have Phantom wallet installed with SOL available.
                   <Link to="/token" className="text-[#D6BCFA] ml-1 hover:underline">
-                    click here
+                    Learn more
                   </Link>
                 </p>
                 <div className="flex justify-start">
@@ -126,6 +125,7 @@ const MemberArea = () => {
                     onPaymentSuccess={handlePaymentSuccess}
                     tokenAddress={tokenAddress}
                     adminAddress={adminAddress}
+                    amount={20}
                     className="w-full sm:w-[180px] bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
                   >
                     BUY NOW

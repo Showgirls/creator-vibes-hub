@@ -17,7 +17,7 @@ const SolanaPayment = ({
   onPaymentSuccess,
   tokenAddress = "3SXgM5nXZ5HZbhPyzaEjfVu5uShDjFPaM7a8TFg9moFm",
   adminAddress = "44o43y41gytnCtJhaENskAYFoZqg5WyMVskMirbK6bZx",
-  amount = 48,
+  amount = 20, // Changed to $20 USD as requested
   className,
   children
 }: SolanaPaymentProps) => {
@@ -87,13 +87,19 @@ const SolanaPayment = ({
         const fromPublicKey = new PublicKey(userPublicKey as string);
         const toPublicKey = new PublicKey(adminAddress);
         
-        // Create a simple SOL transfer transaction (as a placeholder)
-        // In a production app, this would be a proper SPL token transfer
+        // Calculate the amount in lamports for $20 USD worth of SOL
+        // Note: In a production app, you would fetch the current SOL price from an API
+        // For simplicity, assuming 1 SOL = $100 here (this should be replaced with real price data)
+        const estimatedSolPrice = 100; // USD per SOL
+        const solAmount = amount / estimatedSolPrice; // $20 / $100 = 0.2 SOL
+        const lamports = Math.floor(solAmount * LAMPORTS_PER_SOL); // Convert to lamports
+        
+        // Create a SOL transfer transaction
         const transaction = new Transaction().add(
           SystemProgram.transfer({
             fromPubkey: fromPublicKey,
             toPubkey: toPublicKey,
-            lamports: LAMPORTS_PER_SOL * amount / 100, // Converting $48 to SOL equivalent
+            lamports: lamports, // Sending $20 USD worth of SOL
           })
         );
         
@@ -113,6 +119,7 @@ const SolanaPayment = ({
         toast.info("Processing payment, please wait...");
         await connection.confirmTransaction(signature, "confirmed");
         
+        // ONLY update premium status after successful transaction confirmation
         toast.success("Payment successful! You are now a premium member!");
         
         // Save premium status to localStorage
