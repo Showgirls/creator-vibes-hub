@@ -115,7 +115,7 @@ const MemberArea = () => {
                   <span className="text-muted-foreground italic">[Normal price: $28 per month or $280 per year]</span>
                 </div>
                 <p className="text-muted-foreground mb-6">
-                  *Payment is with $SOL (Solana). Make sure you have Phantom wallet installed with SOL available.
+                  *Payment is with FkiTT token. Make sure you have Phantom wallet installed with the token available.
                   <Link to="/token" className="text-[#D6BCFA] ml-1 hover:underline">
                     Learn more
                   </Link>

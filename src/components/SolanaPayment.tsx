@@ -1,6 +1,14 @@
 
 import { useState, useEffect } from 'react';
-import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { 
+  Connection, 
+  PublicKey, 
+  Transaction, 
+  SystemProgram, 
+  LAMPORTS_PER_SOL,
+  sendAndConfirmTransaction
+} from '@solana/web3.js';
+import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -17,7 +25,7 @@ const SolanaPayment = ({
   onPaymentSuccess,
   tokenAddress = "3SXgM5nXZ5HZbhPyzaEjfVu5uShDjFPaM7a8TFg9moFm",
   adminAddress = "44o43y41gytnCtJhaENskAYFoZqg5WyMVskMirbK6bZx",
-  amount = 20, // Changed to $20 USD as requested
+  amount = 20,
   className,
   children
 }: SolanaPaymentProps) => {
@@ -80,28 +88,63 @@ const SolanaPayment = ({
       // Use Solana connection
       const connection = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
       
-      toast.info("Preparing transaction...");
+      toast.info("Preparing token transfer...");
       
       try {
         // Converting the addresses to PublicKey objects
         const fromPublicKey = new PublicKey(userPublicKey as string);
         const toPublicKey = new PublicKey(adminAddress);
+        const tokenPublicKey = new PublicKey(tokenAddress);
         
-        // Calculate the amount in lamports for $20 USD worth of SOL
-        // Note: In a production app, you would fetch the current SOL price from an API
-        // For simplicity, assuming 1 SOL = $100 here (this should be replaced with real price data)
-        const estimatedSolPrice = 100; // USD per SOL
-        const solAmount = amount / estimatedSolPrice; // $20 / $100 = 0.2 SOL
-        const lamports = Math.floor(solAmount * LAMPORTS_PER_SOL); // Convert to lamports
-        
-        // Create a SOL transfer transaction
-        const transaction = new Transaction().add(
-          SystemProgram.transfer({
-            fromPubkey: fromPublicKey,
-            toPubkey: toPublicKey,
-            lamports: lamports, // Sending $20 USD worth of SOL
-          })
+        // Create a token transfer instruction
+        // First we need to find the associated token account for the user
+        const userTokenAccountsResponse = await connection.getParsedTokenAccountsByOwner(
+          fromPublicKey,
+          { mint: tokenPublicKey }
         );
+        
+        if (userTokenAccountsResponse.value.length === 0) {
+          toast.error("You don't have any of the required tokens in your wallet");
+          setLoading(false);
+          return;
+        }
+        
+        // Get user's token account
+        const userTokenAccount = userTokenAccountsResponse.value[0].pubkey;
+        
+        // Find or create admin's associated token account
+        const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+          toPublicKey,
+          { mint: tokenPublicKey }
+        );
+        
+        // If admin doesn't have a token account for this token, we would need to create one
+        // This is simplified - in production you would create the account if it doesn't exist
+        if (tokenAccounts.value.length === 0) {
+          toast.error("Recipient doesn't have a token account set up");
+          setLoading(false);
+          return;
+        }
+        
+        const adminTokenAccount = tokenAccounts.value[0].pubkey;
+        
+        // Token amount to transfer (token decimal places might vary)
+        // For this example, assume the token has 9 decimal places
+        const tokenDecimals = 9; // This should be fetched from the token's metadata
+        const tokenAmount = amount * Math.pow(10, tokenDecimals);
+        
+        // Create the transfer instruction
+        const transferInstruction = Token.createTransferInstruction(
+          TOKEN_PROGRAM_ID,
+          userTokenAccount,
+          adminTokenAccount,
+          fromPublicKey,
+          [],
+          tokenAmount
+        );
+        
+        // Create a new transaction and add the transfer instruction
+        const transaction = new Transaction().add(transferInstruction);
         
         // Setting the most recent blockhash
         const { blockhash } = await connection.getLatestBlockhash();

@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
 
@@ -82,7 +83,17 @@ const Token = () => {
             <p className="text-sm sm:text-base text-white mb-6 leading-relaxed">
               Getting access to FkiTT is quick and easy! First, purchase Solana (SOL) from your preferred exchange with your local currency such as Binance, Coinbase or other. Next, download and set up a Phantom Wallet <a href="https://phantom.com" target="_blank" rel="noopener noreferrer" className="text-[#f9166f] hover:underline">Get Phantom Wallet here</a>. Once set up, log in with Phantom and swap SOL for $FkiTT tokens on the DEX. Finally, use your $FkiTT tokens to pay for your membership and unlock unlimited access to all creators!
             </p>
-            <div className="flex justify-start">
+            <div className="flex flex-col space-y-4">
+              <div className="bg-black/30 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold mb-2 text-white">Token Information for Phantom Wallet</h3>
+                <p className="text-sm text-white mb-2">To add the FkiTT token to your Phantom wallet, use this address:</p>
+                <div className="p-3 bg-black/50 rounded-md mb-3">
+                  <code className="text-xs sm:text-sm text-green-400 font-mono break-all">3SXgM5nXZ5HZbhPyzaEjfVu5uShDjFPaM7a8TFg9moFm</code>
+                </div>
+                <p className="text-xs text-white/80">Copy this address and use the "Add custom token" feature in your Phantom wallet.</p>
+              </div>
+            </div>
+            <div className="flex justify-start mt-6">
               <a href="https://fkitt.com/token/buy" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-[180px] bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
                   BUY $FkiTT NOW
