@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
@@ -54,7 +53,7 @@ const Home = () => {
   const formatNumber = (num: number) => {
     return num.toString().padStart(2, '0');
   };
-
+  
   return (
     <div className="min-h-screen flex flex-col">
       <div className="flex-1 flex flex-col items-center p-4 sm:p-8 bg-gradient-to-b from-[#1A1F2C] to-[#2D3748]">
@@ -76,7 +75,7 @@ const Home = () => {
           <p className="text-lg sm:text-xl md:text-2xl text-white mb-8 sm:mb-12 leading-relaxed">
             Join now for a lifetime membership at just $20 (normally $28/month or $280/year)! 
             Offer ends when the clock stops. Secure your spot before launch and 
-            enjoy unlimited access while supporting creators like never before! *Offer is limited to the first 5000 $FkiTT holders!
+            enjoy unlimited access while supporting creators like never before! <i>*Offer is limited to the first 5000 $FkiTT holders!</i>
           </p>
           
           {/* Countdown timer - Improved for mobile */}
