@@ -99,7 +99,7 @@ const Login = () => {
               <Button
                 variant="link"
                 className="text-primary p-0"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/register")}
               >
                 Sign up
               </Button>
