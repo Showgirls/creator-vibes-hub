@@ -1,5 +1,5 @@
 
-import { Twitter, Instagram, MessageCircle } from "lucide-react";
+import { Twitter, Instagram } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -40,7 +40,11 @@ const Footer = () => {
           <p className="text-sm mb-4 md:mb-0">©2025 Fkitt. All Rights Reserved.</p>
           <div className="flex space-x-6">
             <a href="https://t.me/fkittt" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#D6BCFA]">
-              <MessageCircle className="w-6 h-6" />
+              <img 
+                src="/lovable-uploads/7cf1fb93-6f35-4b25-a1dd-5358aaa35b12.png" 
+                alt="Telegram" 
+                className="w-6 h-6 filter brightness-0 invert hover:brightness-100 hover:invert-0 transition-all" 
+              />
             </a>
             <a href="https://www.instagram.com/fkittcom/" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#D6BCFA]">
               <Instagram className="w-6 h-6" />
