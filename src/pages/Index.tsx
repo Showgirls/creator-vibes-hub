@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -86,11 +86,11 @@ const Index = ({ isRegister = false }: IndexProps) => {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel className="text-[#f9166f]">Username</FormLabel>
                     <FormControl>
                       <Input placeholder="johndoe" {...field} />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-white" />
                   </FormItem>
                 )}
               />
@@ -99,11 +99,11 @@ const Index = ({ isRegister = false }: IndexProps) => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-[#f9166f]">Email</FormLabel>
                     <FormControl>
                       <Input placeholder="email@example.com" {...field} />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-white" />
                   </FormItem>
                 )}
               />
@@ -112,11 +112,11 @@ const Index = ({ isRegister = false }: IndexProps) => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className="text-[#f9166f]">Password</FormLabel>
                     <FormControl>
                       <Input type="password" {...field} />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-white" />
                   </FormItem>
                 )}
               />
@@ -125,11 +125,11 @@ const Index = ({ isRegister = false }: IndexProps) => {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
+                    <FormLabel className="text-[#f9166f]">Confirm Password</FormLabel>
                     <FormControl>
                       <Input type="password" {...field} />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-white" />
                   </FormItem>
                 )}
               />
@@ -145,7 +145,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>
+                      <FormLabel className="text-white">
                         I confirm that I am 18 years or older
                       </FormLabel>
                     </div>
@@ -164,7 +164,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>
+                      <FormLabel className="text-white">
                         I accept the Terms of Service and Privacy Policy
                       </FormLabel>
                     </div>
@@ -181,7 +181,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
             <Link to="/login">
               <Button
                 variant="link"
-                className="text-primary"
+                className="text-white"
               >
                 Already have an account? Login
               </Button>
