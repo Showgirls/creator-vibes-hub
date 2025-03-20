@@ -1,6 +1,5 @@
 
-import { Twitter, Instagram } from "lucide-react";
-import { FaTiktok } from "react-icons/fa6";
+import { Twitter, Instagram, Telegram } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -40,13 +39,13 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/10">
           <p className="text-sm mb-4 md:mb-0">©2025 Fkitt. All Rights Reserved.</p>
           <div className="flex space-x-6">
-            <a href="#" className="text-white hover:text-[#D6BCFA]">
-              <FaTiktok className="w-6 h-6" />
+            <a href="https://t.me/fkittt" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#D6BCFA]">
+              <Telegram className="w-6 h-6" />
             </a>
-            <a href="#" className="text-white hover:text-[#D6BCFA]">
+            <a href="https://www.instagram.com/fkittcom/" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#D6BCFA]">
               <Instagram className="w-6 h-6" />
             </a>
-            <a href="#" className="text-white hover:text-[#D6BCFA]">
+            <a href="https://x.com/fkittcom" target="_blank" rel="noopener noreferrer" className="text-white hover:text-[#D6BCFA]">
               <Twitter className="w-6 h-6" />
             </a>
           </div>
