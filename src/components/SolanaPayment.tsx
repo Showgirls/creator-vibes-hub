@@ -8,7 +8,7 @@ import {
   LAMPORTS_PER_SOL,
   sendAndConfirmTransaction
 } from '@solana/web3.js';
-import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { createTransferInstruction, getAssociatedTokenAddress } from '@solana/spl-token';
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -96,8 +96,7 @@ const SolanaPayment = ({
         const toPublicKey = new PublicKey(adminAddress);
         const tokenPublicKey = new PublicKey(tokenAddress);
         
-        // Create a token transfer instruction
-        // First we need to find the associated token account for the user
+        // Find the user's associated token account for this token
         const userTokenAccountsResponse = await connection.getParsedTokenAccountsByOwner(
           fromPublicKey,
           { mint: tokenPublicKey }
@@ -112,34 +111,22 @@ const SolanaPayment = ({
         // Get user's token account
         const userTokenAccount = userTokenAccountsResponse.value[0].pubkey;
         
-        // Find or create admin's associated token account
-        const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
-          toPublicKey,
-          { mint: tokenPublicKey }
+        // Find or get admin's associated token account
+        const adminTokenAddress = await getAssociatedTokenAddress(
+          tokenPublicKey,
+          toPublicKey
         );
-        
-        // If admin doesn't have a token account for this token, we would need to create one
-        // This is simplified - in production you would create the account if it doesn't exist
-        if (tokenAccounts.value.length === 0) {
-          toast.error("Recipient doesn't have a token account set up");
-          setLoading(false);
-          return;
-        }
-        
-        const adminTokenAccount = tokenAccounts.value[0].pubkey;
         
         // Token amount to transfer (token decimal places might vary)
         // For this example, assume the token has 9 decimal places
         const tokenDecimals = 9; // This should be fetched from the token's metadata
-        const tokenAmount = amount * Math.pow(10, tokenDecimals);
+        const tokenAmount = BigInt(amount * Math.pow(10, tokenDecimals));
         
         // Create the transfer instruction
-        const transferInstruction = Token.createTransferInstruction(
-          TOKEN_PROGRAM_ID,
+        const transferInstruction = createTransferInstruction(
           userTokenAccount,
-          adminTokenAccount,
+          adminTokenAddress,
           fromPublicKey,
-          [],
           tokenAmount
         );
         
