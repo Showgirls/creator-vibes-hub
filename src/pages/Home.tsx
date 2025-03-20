@@ -81,7 +81,7 @@ const Home = () => {
           
           {/* Countdown timer - Improved for mobile */}
           <div className="bg-[#2D3748]/50 rounded-lg p-4 sm:p-6 mb-8 sm:mb-10 w-full sm:inline-block">
-            <p className="text-white text-xl sm:text-2xl mb-2 font-bold">Intro Offer ends in:</p>
+            <p className="text-white text-xl sm:text-2xl mb-2 font-bold">FkiTT is live in:</p>
             <div className="flex justify-center gap-2 sm:gap-4 text-[#f9166f]">
               <div className="text-center">
                 <div className="text-3xl sm:text-5xl font-bold">{formatNumber(timeLeft.days)}</div>
