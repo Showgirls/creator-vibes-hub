@@ -79,10 +79,10 @@ const Home = () => {
             enjoy unlimited access while supporting creators like never before! <em>*Offer is limited to the first 5000 $FkiTT holders!</em>
           </p>
           
-          {/* Countdown timer - Improved for mobile */}
+          {/* Countdown timer - Improved for mobile - UPDATED COLORS HERE */}
           <div className="bg-[#2D3748]/50 rounded-lg p-4 sm:p-6 mb-8 sm:mb-10 w-full sm:inline-block">
-            <p className="text-white text-xl sm:text-2xl mb-2 font-bold">FkiTT is live in:</p>
-            <div className="flex justify-center gap-2 sm:gap-4 text-[#f9166f]">
+            <p className="text-[#f9166f] text-xl sm:text-2xl mb-2 font-bold">FkiTT is live in:</p>
+            <div className="flex justify-center gap-2 sm:gap-4 text-white">
               <div className="text-center">
                 <div className="text-3xl sm:text-5xl font-bold">{formatNumber(timeLeft.days)}</div>
                 <div className="text-xs sm:text-sm">DAYS</div>
