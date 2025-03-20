@@ -72,11 +72,11 @@ const Home = () => {
             FkiTT is Coming – The Future of Adult Content is Here!
           </h1>
           
-          {/* Subheader */}
+          {/* Subheader - UPDATED TEXT HERE */}
           <p className="text-lg sm:text-xl md:text-2xl text-white mb-8 sm:mb-12 leading-relaxed">
-            Join now for a lifetime membership at just $48 (normally $28/month)! 
+            Join now for a lifetime membership at just $20 (normally $28/month or $280/year)! 
             Offer ends when the clock stops. Secure your spot before launch and 
-            enjoy unlimited access while supporting creators like never before!
+            enjoy unlimited access while supporting creators like never before! *Offer is limited to the first 5000 $FkiTT holders!
           </p>
           
           {/* Countdown timer - Improved for mobile */}
