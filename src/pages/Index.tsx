@@ -86,7 +86,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[#f9166f]">Username</FormLabel>
+                    <FormLabel className="text-white">Username</FormLabel>
                     <FormControl>
                       <Input placeholder="johndoe" {...field} />
                     </FormControl>
@@ -99,7 +99,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[#f9166f]">Email</FormLabel>
+                    <FormLabel className="text-white">Email</FormLabel>
                     <FormControl>
                       <Input placeholder="email@example.com" {...field} />
                     </FormControl>
@@ -112,7 +112,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[#f9166f]">Password</FormLabel>
+                    <FormLabel className="text-white">Password</FormLabel>
                     <FormControl>
                       <Input type="password" {...field} />
                     </FormControl>
@@ -125,7 +125,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[#f9166f]">Confirm Password</FormLabel>
+                    <FormLabel className="text-white">Confirm Password</FormLabel>
                     <FormControl>
                       <Input type="password" {...field} />
                     </FormControl>
