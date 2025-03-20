@@ -68,12 +68,12 @@ const Home = () => {
         {/* Main content container */}
         <div className="w-full max-w-4xl mx-auto text-center glass-card p-5 sm:p-10 rounded-lg mb-8 sm:mb-12">
           {/* Main heading */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#f9166f] mb-4 sm:mb-6">
             FkiTT is Coming – The Future of Adult Content is Here!
           </h1>
           
           {/* Subheader */}
-          <p className="text-lg sm:text-xl md:text-2xl text-[#D6BCFA] mb-8 sm:mb-12 leading-relaxed">
+          <p className="text-lg sm:text-xl md:text-2xl text-white mb-8 sm:mb-12 leading-relaxed">
             Join now for a lifetime membership at just $48 (normally $28/month)! 
             Offer ends when the clock stops. Secure your spot before launch and 
             enjoy unlimited access while supporting creators like never before!
@@ -116,7 +116,7 @@ const Home = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="w-full border-[#f9166f] text-[#D6BCFA] hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 sm:py-6 text-base sm:text-lg h-auto"
+                className="w-full border-[#f9166f] text-white hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 sm:py-6 text-base sm:text-lg h-auto"
               >
                 Login
               </Button>
@@ -127,10 +127,10 @@ const Home = () => {
           <div className="mt-12 space-y-8 sm:space-y-12">
             {/* First section */}
             <div className="bg-[#2D3748]/30 rounded-lg p-5 sm:p-8">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3 sm:mb-4">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#f9166f] mb-3 sm:mb-4">
                 Welcome to FkiTT – The First Revenue-Sharing Adult Platform!
               </h2>
-              <p className="text-base sm:text-lg text-[#D6BCFA] leading-relaxed">
+              <p className="text-base sm:text-lg text-white leading-relaxed">
                 Why pay per creator when you can pay once and access them all? For just one monthly fee, 
                 you unlock unlimited content from every creator on the platform. No extra charges, 
                 no hidden fees—just pure, unrestricted access.
@@ -139,10 +139,10 @@ const Home = () => {
             
             {/* Second section */}
             <div className="bg-[#2D3748]/30 rounded-lg p-5 sm:p-8">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3 sm:mb-4">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#f9166f] mb-3 sm:mb-4">
                 Creators Wanted!
               </h2>
-              <p className="text-base sm:text-lg text-[#D6BCFA] leading-relaxed">
+              <p className="text-base sm:text-lg text-white leading-relaxed">
                 Models can apply directly in the members area and start earning.
               </p>
             </div>
@@ -158,7 +158,7 @@ const Home = () => {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="w-full border-[#f9166f] text-[#D6BCFA] hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 sm:py-6 text-base sm:text-lg h-auto"
+                  className="w-full border-[#f9166f] text-white hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 sm:py-6 text-base sm:text-lg h-auto"
                 >
                   Login
                 </Button>
