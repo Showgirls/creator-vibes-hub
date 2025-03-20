@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
@@ -75,7 +76,7 @@ const Home = () => {
           <p className="text-lg sm:text-xl md:text-2xl text-white mb-8 sm:mb-12 leading-relaxed">
             Join now for a lifetime membership at just $20 (normally $28/month or $280/year)! 
             Offer ends when the clock stops. Secure your spot before launch and 
-            enjoy unlimited access while supporting creators like never before! <i>*Offer is limited to the first 5000 $FkiTT holders!</i>
+            enjoy unlimited access while supporting creators like never before! <em>*Offer is limited to the first 5000 $FkiTT holders!</em>
           </p>
           
           {/* Countdown timer - Improved for mobile */}
