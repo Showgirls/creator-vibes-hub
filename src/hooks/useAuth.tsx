@@ -9,52 +9,64 @@ export const useAuthCheck = () => {
     try {
       console.log("Running auth check...");
       
-      // Check if the user is logged in
-      const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+      // Check if the user is logged in - use direct access to avoid type coercion
+      const isLoggedInValue = localStorage.getItem("isLoggedIn");
       const activeUser = localStorage.getItem("activeUser");
       
-      console.log("Auth check - isLoggedIn:", isLoggedIn, "activeUser:", activeUser);
+      console.log("Auth check - isLoggedIn value:", isLoggedInValue, "activeUser:", activeUser);
       
       // Make sure we have both isLoggedIn flag and activeUser
-      if (!isLoggedIn || !activeUser) {
-        console.log("Auth check failed: User not properly logged in");
+      if (isLoggedInValue !== "true" || !activeUser) {
+        console.log("Auth check failed: User not properly logged in", 
+          "isLoggedIn:", isLoggedInValue, 
+          "activeUser:", activeUser);
         navigate("/login");
         return;
       }
       
       // Get users from localStorage with better error handling
-      let allUsers = null;
       try {
         const usersStr = localStorage.getItem("allUsers");
-        if (usersStr && usersStr !== "undefined" && usersStr !== "null") {
-          allUsers = JSON.parse(usersStr);
-          console.log("Auth check - available users:", Object.keys(allUsers));
-        } else {
+        console.log("Auth check - raw users string:", usersStr);
+        
+        if (!usersStr || usersStr === "undefined" || usersStr === "null") {
           console.error("No users found in localStorage or invalid data");
+          // Clear invalid state
+          localStorage.removeItem("isLoggedIn");
+          localStorage.removeItem("activeUser");
           navigate("/login");
           return;
         }
+        
+        const allUsers = JSON.parse(usersStr);
+        console.log("Auth check - available users:", Object.keys(allUsers));
+        
+        // Verify that the active user exists in our storage
+        if (!allUsers || !allUsers[activeUser]) {
+          console.log("Auth check failed: Active user data not found", activeUser);
+          // Clear invalid state
+          localStorage.removeItem("isLoggedIn");
+          localStorage.removeItem("activeUser");
+          navigate("/login");
+        } else {
+          console.log("Auth check passed for user:", activeUser);
+          setIsAuthenticated(true);
+          
+          // Update last activity timestamp to keep track of session
+          try {
+            allUsers[activeUser].lastActivity = new Date().toISOString();
+            localStorage.setItem("allUsers", JSON.stringify(allUsers));
+            console.log("Updated last activity for user:", activeUser);
+          } catch (error) {
+            console.error("Error updating last activity:", error);
+          }
+        }
       } catch (e) {
         console.error("Error parsing user data:", e);
+        // Clear potentially corrupted data
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("activeUser");
         navigate("/login");
-        return;
-      }
-      
-      // Verify that the active user exists in our storage
-      if (!allUsers || !allUsers[activeUser]) {
-        console.log("Auth check failed: Active user data not found");
-        navigate("/login");
-      } else {
-        console.log("Auth check passed for user:", activeUser);
-        setIsAuthenticated(true);
-        
-        // Update last activity timestamp to keep track of session
-        try {
-          allUsers[activeUser].lastActivity = new Date().toISOString();
-          localStorage.setItem("allUsers", JSON.stringify(allUsers));
-        } catch (error) {
-          console.error("Error updating last activity:", error);
-        }
       }
     } catch (error) {
       console.error("Auth check error:", error);

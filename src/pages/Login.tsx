@@ -30,24 +30,43 @@ const Login = () => {
   
   // Check if user is already logged in
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    console.log("Login page - Checking existing login...");
+    
+    // Get the raw values to avoid type coercion
+    const isLoggedInValue = localStorage.getItem("isLoggedIn");
     const activeUser = localStorage.getItem("activeUser");
     
-    console.log("Login page initial check - isLoggedIn:", isLoggedIn, "activeUser:", activeUser);
+    console.log("Login page initial check - isLoggedIn value:", isLoggedInValue, "activeUser:", activeUser);
     
-    if (isLoggedIn && activeUser) {
+    if (isLoggedInValue === "true" && activeUser) {
       // Verify the user exists in allUsers
       try {
         const usersStr = localStorage.getItem("allUsers");
-        if (usersStr && usersStr !== "undefined" && usersStr !== "null") {
-          const allUsers = JSON.parse(usersStr);
-          if (allUsers && allUsers[activeUser]) {
-            console.log("User already logged in, redirecting to member area");
-            navigate("/member-area");
-          }
+        console.log("Login page - Retrieved users string:", usersStr);
+        
+        if (!usersStr || usersStr === "undefined" || usersStr === "null") {
+          console.log("Login page - No valid users found in localStorage");
+          // Clear potentially invalid login state
+          localStorage.removeItem("isLoggedIn");
+          localStorage.removeItem("activeUser");
+          return;
+        }
+        
+        const allUsers = JSON.parse(usersStr);
+        if (allUsers && allUsers[activeUser]) {
+          console.log("User already logged in, redirecting to member area", activeUser);
+          navigate("/member-area");
+        } else {
+          console.log("User not found in allUsers:", activeUser);
+          // Clear invalid login state
+          localStorage.removeItem("isLoggedIn");
+          localStorage.removeItem("activeUser");
         }
       } catch (error) {
         console.error("Error checking existing login:", error);
+        // Clear potentially corrupted data
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("activeUser");
       }
     }
   }, [navigate]);
@@ -73,15 +92,20 @@ const Login = () => {
         const usersStr = localStorage.getItem("allUsers");
         console.log("Retrieved users string:", usersStr);
         
-        if (usersStr && usersStr !== "undefined" && usersStr !== "null") {
-          allUsers = JSON.parse(usersStr);
-          console.log("Parsed users object:", Object.keys(allUsers));
-        } else {
+        if (!usersStr || usersStr === "undefined" || usersStr === "null") {
           console.log("No users found in localStorage");
+        } else {
+          try {
+            allUsers = JSON.parse(usersStr);
+            console.log("Parsed users object:", Object.keys(allUsers));
+          } catch (e) {
+            console.error("Error parsing users:", e);
+            allUsers = {};
+          }
         }
       } catch (e) {
-        console.error("Error parsing users:", e);
-        // Don't reset localStorage here, just handle the error
+        console.error("Error retrieving users:", e);
+        allUsers = {};
       }
       
       // Check if the user exists
@@ -97,14 +121,18 @@ const Login = () => {
       console.log(`Checking password for ${values.username}`);
       
       if (userData.password === values.password) {
-        // Set active user in localStorage
+        // Set login state in localStorage
+        console.log(`Setting login state for ${values.username}`);
         localStorage.setItem("activeUser", values.username);
         localStorage.setItem("isLoggedIn", "true");
         
-        // Also update user object in localStorage with a lastLogin timestamp
+        // Update user object with lastLogin timestamp
         userData.lastLogin = new Date().toISOString();
         allUsers[values.username] = userData;
+        
+        // Save updated user data back to localStorage
         localStorage.setItem("allUsers", JSON.stringify(allUsers));
+        console.log(`User data updated and saved to localStorage`);
         
         console.log(`User ${values.username} logged in successfully`);
         toast.success("Login successful!");
