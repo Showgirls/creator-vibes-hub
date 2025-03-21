@@ -56,6 +56,9 @@ const Index = ({ isRegister = false }: IndexProps) => {
       localStorage.setItem('referredBy', refCode);
       setReferredBy(refCode);
       console.log('User was referred by:', refCode);
+      
+      // Immediately update the referrer's stats when someone visits with their referral link
+      updateReferrerStats(refCode);
     } else {
       // Check localStorage if no URL param
       const storedRefCode = localStorage.getItem('referredBy');
@@ -65,6 +68,27 @@ const Index = ({ isRegister = false }: IndexProps) => {
       }
     }
   }, [location]);
+
+  // Function to update referrer stats when someone uses their referral link
+  const updateReferrerStats = (referrer: string) => {
+    const referrerStats = localStorage.getItem(`referralStats_${referrer}`);
+    if (referrerStats) {
+      const stats = JSON.parse(referrerStats);
+      stats.members += 1; // Increment referred members count
+      stats.earnings += 1.00; // Add $1 for the referral
+      localStorage.setItem(`referralStats_${referrer}`, JSON.stringify(stats));
+      
+      console.log(`Updated stats for referrer ${referrer}: +1 member, +$1.00 earnings`);
+    } else {
+      // If referrer has no stats yet, create initial stats
+      const initialStats = {
+        members: 1,
+        earnings: 1.00
+      };
+      localStorage.setItem(`referralStats_${referrer}`, JSON.stringify(initialStats));
+      console.log(`Created stats for referrer ${referrer}: 1 member, $1.00 earnings`);
+    }
+  };
 
   const signupForm = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
@@ -91,18 +115,10 @@ const Index = ({ isRegister = false }: IndexProps) => {
     };
     localStorage.setItem(`referralStats_${values.username}`, JSON.stringify(initialStats));
     
-    // If the user was referred, update the referrer's stats
+    // If the user was referred, update the referrer's stats again on signup
+    // This ensures both visit and signup are counted
     if (referredBy) {
-      const referrerStats = localStorage.getItem(`referralStats_${referredBy}`);
-      if (referrerStats) {
-        const stats = JSON.parse(referrerStats);
-        stats.members += 1; // Increment referred members count
-        stats.earnings += 1.00; // Add $1 for the signup
-        localStorage.setItem(`referralStats_${referredBy}`, JSON.stringify(stats));
-        
-        // In a real implementation, you would call your backend API here
-        console.log(`Updated stats for referrer ${referredBy}: +1 member, +$1.00 earnings`);
-      }
+      updateReferrerStats(referredBy);
     }
     
     toast.success("Account created successfully!");

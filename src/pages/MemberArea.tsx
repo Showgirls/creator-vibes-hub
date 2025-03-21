@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -43,7 +42,7 @@ const MemberArea = () => {
     // Load referral stats from localStorage
     // In a real implementation, this would come from your backend
     const loadReferralStats = () => {
-      const storedStats = localStorage.getItem(`referralStats_${username}`);
+      const storedStats = localStorage.getItem(`referralStats_${storedUsername}`);
       if (storedStats) {
         setReferralStats(JSON.parse(storedStats));
       } else {
@@ -52,15 +51,15 @@ const MemberArea = () => {
           members: 0,
           earnings: 0
         };
-        localStorage.setItem(`referralStats_${username}`, JSON.stringify(initialStats));
+        localStorage.setItem(`referralStats_${storedUsername}`, JSON.stringify(initialStats));
         setReferralStats(initialStats);
       }
     };
     
     loadReferralStats();
     
-    // Set up an interval to check for stats updates (e.g., from other tabs)
-    const statsInterval = setInterval(loadReferralStats, 5000);
+    // Set up an interval to check for stats updates (e.g., from other tabs or new referrals)
+    const statsInterval = setInterval(loadReferralStats, 3000);
     
     return () => clearInterval(statsInterval);
   }, [username]);
