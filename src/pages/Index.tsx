@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -70,61 +69,57 @@ const Index = ({ isRegister = false }: IndexProps) => {
     // Reset any previous error
     setRegistrationError(null);
     
-    // Check if username or email already exists
-    const usernameExists = localStorage.getItem(`user_${values.username}`);
-    
-    // Check if email is already used
-    let emailExists = false;
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('user_')) {
-        try {
-          const userData = JSON.parse(localStorage.getItem(key) || '{}');
-          if (userData.email === values.email) {
-            emailExists = true;
-            break;
-          }
-        } catch (e) {
-          console.error('Error parsing user data:', e);
-        }
-      }
-    }
-    
-    if (usernameExists) {
-      setRegistrationError("Username already exists");
-      toast.error("Username already exists");
-      return;
-    }
-    
-    if (emailExists) {
-      setRegistrationError("Email already in use");
-      toast.error("Email already in use");
-      return;
-    }
-    
-    // Create user object with credentials
-    const userObject = {
-      username: values.username,
-      email: values.email,
-      password: values.password,
-      createdAt: new Date().toISOString(),
-      isPremium: false
-    };
-    
     try {
-      // Save user data with username as key for easier lookup
-      localStorage.setItem(`user_${values.username}`, JSON.stringify(userObject));
+      // Get all users from localStorage or initialize empty object
+      const allUsers = JSON.parse(localStorage.getItem("allUsers") || "{}");
+      
+      // Check if username already exists
+      if (allUsers[values.username]) {
+        setRegistrationError("Username already exists");
+        toast.error("Username already exists");
+        return;
+      }
+      
+      // Check if email is already used
+      let emailExists = false;
+      Object.values(allUsers).forEach((user: any) => {
+        if (user.email === values.email) {
+          emailExists = true;
+        }
+      });
+      
+      if (emailExists) {
+        setRegistrationError("Email already in use");
+        toast.error("Email already in use");
+        return;
+      }
+      
+      // Create user object with credentials
+      const userObject = {
+        username: values.username,
+        email: values.email,
+        password: values.password,
+        createdAt: new Date().toISOString(),
+        isPremium: false
+      };
+      
+      // Add the new user to the allUsers object
+      allUsers[values.username] = userObject;
+      
+      // Save all users to localStorage
+      localStorage.setItem("allUsers", JSON.stringify(allUsers));
       
       // Set active user
       localStorage.setItem("activeUser", values.username);
       localStorage.setItem("isLoggedIn", "true");
       
       // Initialize referral stats for this user
-      const initialStats = {
+      const referralStatsObj = JSON.parse(localStorage.getItem("referralStats") || "{}");
+      referralStatsObj[values.username] = {
         members: 0,
         earnings: 0
       };
-      localStorage.setItem(`referralStats_${values.username}`, JSON.stringify(initialStats));
+      localStorage.setItem("referralStats", JSON.stringify(referralStatsObj));
       
       console.log(`New user registered: ${values.username}`);
       
@@ -133,36 +128,25 @@ const Index = ({ isRegister = false }: IndexProps) => {
         console.log(`Processing referral completion for referrer: ${referredBy}`);
         
         try {
-          const referrerStats = localStorage.getItem(`referralStats_${referredBy}`);
-          if (referrerStats) {
-            const stats = JSON.parse(referrerStats);
+          const referralStats = JSON.parse(localStorage.getItem("referralStats") || "{}");
+          if (referralStats[referredBy]) {
+            const stats = referralStats[referredBy];
             console.log(`Current stats for ${referredBy} before signup credit:`, stats);
             
             // We specifically want to increment the members count
             stats.members = Number(stats.members) + 1;
             
-            localStorage.setItem(`referralStats_${referredBy}`, JSON.stringify(stats));
+            referralStats[referredBy] = stats;
+            localStorage.setItem("referralStats", JSON.stringify(referralStats));
             console.log(`Updated stats for ${referredBy} after signup:`, stats);
-            
-            // Dispatch storage event to notify other tabs/windows
-            window.dispatchEvent(new StorageEvent('storage', {
-              key: `referralStats_${referredBy}`,
-              newValue: JSON.stringify(stats)
-            }));
           } else {
             // Initialize stats for this referrer with one member
             console.log(`No existing stats found for ${referredBy}, creating new entry`);
-            const newStats = {
+            referralStats[referredBy] = {
               members: 1,
               earnings: 0
             };
-            localStorage.setItem(`referralStats_${referredBy}`, JSON.stringify(newStats));
-            
-            // Dispatch storage event to notify other tabs/windows
-            window.dispatchEvent(new StorageEvent('storage', {
-              key: `referralStats_${referredBy}`,
-              newValue: JSON.stringify(newStats)
-            }));
+            localStorage.setItem("referralStats", JSON.stringify(referralStats));
           }
         } catch (error) {
           console.error('Error updating referrer stats on signup:', error);

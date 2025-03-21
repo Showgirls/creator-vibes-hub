@@ -41,21 +41,20 @@ const Login = () => {
     setLoginError(null);
     
     try {
-      // Directly check for the username in localStorage
-      const userKey = `user_${values.username}`;
-      const userDataStr = localStorage.getItem(userKey);
+      // Store all users in a single key to ensure accessibility across devices
+      const allUsers = JSON.parse(localStorage.getItem("allUsers") || "{}");
       
-      if (!userDataStr) {
+      // Check if the user exists
+      if (!allUsers[values.username]) {
         console.log(`Login failed: User ${values.username} not found`);
         setLoginError("Invalid username or password");
         toast.error("Invalid username or password");
         return;
       }
       
-      // Parse the stored user data
-      const userData = JSON.parse(userDataStr);
-      
       // Verify the password
+      const userData = allUsers[values.username];
+      
       if (userData.password === values.password) {
         // Set active user in localStorage
         localStorage.setItem("activeUser", values.username);

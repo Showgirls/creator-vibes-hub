@@ -17,9 +17,9 @@ export const useAuthCheck = () => {
       return;
     }
     
-    // Verify that the active user exists in our storage using the correct key format
-    const userData = localStorage.getItem(`user_${activeUser}`);
-    if (!userData) {
+    // Verify that the active user exists in our storage
+    const allUsers = JSON.parse(localStorage.getItem("allUsers") || "{}");
+    if (!allUsers[activeUser]) {
       console.log("Auth check failed: Active user data not found");
       localStorage.removeItem("isLoggedIn");
       localStorage.removeItem("activeUser");
