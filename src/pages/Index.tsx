@@ -50,17 +50,22 @@ const Index = ({ isRegister = false }: IndexProps) => {
   useEffect(() => {
     // Check if user is already logged in
     try {
+      console.log("Checking login state on Register page");
       const username = localStorage.getItem("user_username");
       
       if (username) {
         // Verify user in all_users
         const allUsersStr = localStorage.getItem("all_users");
         if (allUsersStr) {
-          const allUsers = JSON.parse(allUsersStr);
-          if (allUsers[username]) {
-            console.log("User already logged in:", username);
-            navigate("/member-area");
-            return;
+          try {
+            const allUsers = JSON.parse(allUsersStr);
+            if (allUsers[username]) {
+              console.log("User already logged in:", username);
+              navigate("/member-area");
+              return;
+            }
+          } catch (e) {
+            console.error("Error parsing all_users on Register page:", e);
           }
         }
         
@@ -123,23 +128,26 @@ const Index = ({ isRegister = false }: IndexProps) => {
           console.log("Processing referral for:", referredBy);
           try {
             // Try to update the referrer's stats
-            let referralStats = {};
+            const referralStatsStr = localStorage.getItem("referral_stats") || "{}";
             try {
-              const storedStats = localStorage.getItem("referral_stats");
-              referralStats = storedStats ? JSON.parse(storedStats) : {};
+              const referralStats = JSON.parse(referralStatsStr);
+              
+              // Update or create stats for the referrer
+              if (!referralStats[referredBy]) {
+                referralStats[referredBy] = { members: 0, earnings: 0 };
+              }
+              
+              referralStats[referredBy].members = (referralStats[referredBy].members || 0) + 1;
+              localStorage.setItem("referral_stats", JSON.stringify(referralStats));
+              console.log("Updated referral stats for:", referredBy);
             } catch (e) {
               console.error("Error parsing referral stats:", e);
-              referralStats = {};
+              // Initialize referral stats if corrupted
+              const newReferralStats = {
+                [referredBy]: { members: 1, earnings: 0 }
+              };
+              localStorage.setItem("referral_stats", JSON.stringify(newReferralStats));
             }
-            
-            // Update or create stats for the referrer
-            if (!referralStats[referredBy]) {
-              referralStats[referredBy] = { members: 0, earnings: 0 };
-            }
-            
-            referralStats[referredBy].members = (referralStats[referredBy].members || 0) + 1;
-            localStorage.setItem("referral_stats", JSON.stringify(referralStats));
-            console.log("Updated referral stats for:", referredBy);
           } catch (e) {
             console.error("Error updating referral stats:", e);
           }

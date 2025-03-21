@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,17 +31,22 @@ const Login = () => {
   // Check if user is already logged in
   useEffect(() => {
     try {
+      console.log("Checking login state on Login page");
       const username = localStorage.getItem("user_username");
       
       if (username) {
         // Verify user in all_users
         const allUsersStr = localStorage.getItem("all_users");
         if (allUsersStr) {
-          const allUsers = JSON.parse(allUsersStr);
-          if (allUsers[username]) {
-            console.log("User already logged in:", username);
-            navigate("/member-area");
-            return;
+          try {
+            const allUsers = JSON.parse(allUsersStr);
+            if (allUsers[username]) {
+              console.log("User already logged in:", username);
+              navigate("/member-area");
+              return;
+            }
+          } catch (e) {
+            console.error("Error parsing all_users on Login page:", e);
           }
         }
         
@@ -90,8 +94,6 @@ const Login = () => {
       if (userData.password === values.password) {
         // Update last login time
         userData.lastLogin = new Date().toISOString();
-        allUsers[values.username] = userData;
-        localStorage.setItem("all_users", JSON.stringify(allUsers));
         
         // Login the user
         const success = loginUser(values.username, userData);
