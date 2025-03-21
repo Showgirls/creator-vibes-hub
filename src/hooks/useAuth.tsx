@@ -106,6 +106,11 @@ export const registerUser = (username, email, password) => {
     // Save users
     localStorage.setItem("all_users", JSON.stringify(allUsers));
     
+    // Set up initial referral stats
+    const referralStats = JSON.parse(localStorage.getItem("referral_stats") || "{}");
+    referralStats[username] = { members: 0, earnings: 0 };
+    localStorage.setItem("referral_stats", JSON.stringify(referralStats));
+    
     // Log user in
     loginUser(username, allUsers[username]);
     

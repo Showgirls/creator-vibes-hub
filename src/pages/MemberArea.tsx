@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import Footer from "@/components/Footer";
 import { Link, useNavigate } from "react-router-dom";
 import { ExternalLink, Copy, Check, LogOut } from "lucide-react";
 import { toast } from "sonner";
-import { useAuthCheck } from "@/hooks/useAuth";
+import { useAuthCheck, logoutUser, getCurrentUser } from "@/hooks/useAuth";
 import SolanaPayment from "@/components/SolanaPayment";
 
 const MemberArea = () => {
@@ -31,27 +30,25 @@ const MemberArea = () => {
   
   // Function to load the latest stats from localStorage
   const loadReferralStats = () => {
-    // Get the active user
-    const activeUser = localStorage.getItem("activeUser");
-    if (!activeUser) return;
+    // Get the current user
+    const currentUser = getCurrentUser();
+    if (!currentUser) return;
     
-    console.log("Loading data for active user:", activeUser);
+    const currentUsername = currentUser.username;
+    console.log("Loading data for user:", currentUsername);
     
     // Update the username state
-    if (username !== activeUser) {
-      setUsername(activeUser);
+    if (username !== currentUsername) {
+      setUsername(currentUsername);
     }
     
     // Get all users from localStorage
     try {
-      const usersStr = localStorage.getItem("allUsers");
-      if (usersStr && usersStr !== "undefined" && usersStr !== "null") {
-        const allUsers = JSON.parse(usersStr);
-        if (allUsers && allUsers[activeUser]) {
-          // Check premium status
-          setIsPremium(allUsers[activeUser].isPremium === true);
-          console.log("Premium status:", allUsers[activeUser].isPremium);
-        }
+      const allUsers = JSON.parse(localStorage.getItem("all_users") || "{}");
+      if (allUsers && allUsers[currentUsername]) {
+        // Check premium status
+        setIsPremium(allUsers[currentUsername].isPremium === true);
+        console.log("Premium status:", allUsers[currentUsername].isPremium);
       }
     } catch (error) {
       console.error("Error loading user data:", error);
@@ -59,12 +56,12 @@ const MemberArea = () => {
     
     // Load referral stats from localStorage
     try {
-      const referralStatsStr = localStorage.getItem("referralStats");
+      const referralStatsStr = localStorage.getItem("referral_stats");
       if (referralStatsStr && referralStatsStr !== "undefined" && referralStatsStr !== "null") {
         const allStats = JSON.parse(referralStatsStr);
-        if (allStats && allStats[activeUser]) {
-          console.log(`Loaded stats for ${activeUser}:`, allStats[activeUser]);
-          setReferralStats(allStats[activeUser]);
+        if (allStats && allStats[currentUsername]) {
+          console.log(`Loaded stats for ${currentUsername}:`, allStats[currentUsername]);
+          setReferralStats(allStats[currentUsername]);
         } else {
           console.log("No referral stats found for user, initializing empty stats");
           setReferralStats({ members: 0, earnings: 0 });
@@ -98,32 +95,28 @@ const MemberArea = () => {
   };
   
   const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("activeUser");
+    logoutUser();
     toast.success("Logged out successfully");
     navigate("/login");
   };
   
   const handlePaymentSuccess = () => {
     // Get the current user data
-    const activeUser = localStorage.getItem("activeUser");
-    if (!activeUser) return;
+    const currentUser = getCurrentUser();
+    if (!currentUser) return;
     
     try {
-      const usersStr = localStorage.getItem("allUsers");
-      if (usersStr && usersStr !== "undefined" && usersStr !== "null") {
-        const allUsers = JSON.parse(usersStr);
-        if (allUsers && allUsers[activeUser]) {
-          // Update premium status
-          allUsers[activeUser].isPremium = true;
-          
-          // Save updated user data
-          localStorage.setItem("allUsers", JSON.stringify(allUsers));
-          
-          // Update UI
-          setIsPremium(true);
-          toast.success("Premium membership activated!");
-        }
+      const allUsers = JSON.parse(localStorage.getItem("all_users") || "{}");
+      if (allUsers && allUsers[currentUser.username]) {
+        // Update premium status
+        allUsers[currentUser.username].isPremium = true;
+        
+        // Save updated user data
+        localStorage.setItem("all_users", JSON.stringify(allUsers));
+        
+        // Update UI
+        setIsPremium(true);
+        toast.success("Premium membership activated!");
       }
     } catch (error) {
       console.error('Error updating premium status:', error);
