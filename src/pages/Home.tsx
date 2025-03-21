@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
 import Footer from "@/components/Footer";
@@ -21,22 +22,47 @@ const Home = () => {
     if (referralCode) {
       // Store the referral in localStorage
       localStorage.setItem('referredBy', referralCode);
-      console.log(`User was referred by: ${referralCode}`);
+      console.log(`User was referred by: ${referralCode}`, new Date().toISOString());
       
-      // In a real implementation, you'd call your backend API here to track this referral
-      // For now, we'll just simulate by incrementing stats in localStorage
+      // Track visit in localStorage and broadcast the change
       const referrerStats = localStorage.getItem(`referralStats_${referralCode}`);
       if (referrerStats) {
-        const stats = JSON.parse(referrerStats);
-        stats.members += 1;
-        localStorage.setItem(`referralStats_${referralCode}`, JSON.stringify(stats));
+        try {
+          const stats = JSON.parse(referrerStats);
+          console.log(`Current stats for ${referralCode} before update:`, stats);
+          
+          if (!sessionStorage.getItem(`visited_${referralCode}`)) {
+            // Mark this visit in session storage to prevent multiple counts
+            sessionStorage.setItem(`visited_${referralCode}`, 'true');
+            
+            stats.members = Number(stats.members) + 1;
+            localStorage.setItem(`referralStats_${referralCode}`, JSON.stringify(stats));
+            
+            console.log(`Updated stats for ${referralCode}:`, stats);
+            
+            // Dispatch a custom event to notify other tabs
+            window.dispatchEvent(new Event('storage'));
+          }
+        } catch (error) {
+          console.error('Error updating referrer stats:', error);
+          // Initialize with default values if parsing fails
+          localStorage.setItem(`referralStats_${referralCode}`, JSON.stringify({
+            members: 1,
+            models: 0,
+            earnings: 0
+          }));
+        }
       } else {
-        // Initialize stats for this referrer
+        // Initialize stats for this referrer if they don't exist
+        console.log(`Initializing stats for new referrer: ${referralCode}`);
         localStorage.setItem(`referralStats_${referralCode}`, JSON.stringify({
           members: 1,
           models: 0,
           earnings: 0
         }));
+        
+        // Dispatch a custom event to notify other tabs
+        window.dispatchEvent(new Event('storage'));
       }
     }
   }, [location]);

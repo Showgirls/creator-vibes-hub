@@ -16,7 +16,7 @@ const MemberArea = () => {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
-  const [username, setUsername] = useState("user123");
+  const [username, setUsername] = useState("");
   const [referralStats, setReferralStats] = useState({
     members: 0,
     earnings: 0
@@ -29,24 +29,54 @@ const MemberArea = () => {
   const tokenAddress = "3SXgM5nXZ5HZbhPyzaEjfVu5uShDjFPaM7a8TFg9moFm";
   const adminAddress = "44o43y41gytnCtJhaENskAYFoZqg5WyMVskMirbK6bZx";
   
+  // Function to load the latest stats from localStorage
+  const loadReferralStats = () => {
+    const storedUsername = localStorage.getItem("username");
+    if (!storedUsername) return;
+    
+    // Update the username state if needed
+    if (username !== storedUsername) {
+      setUsername(storedUsername);
+    }
+    
+    // Load referral stats from localStorage
+    const storedStats = localStorage.getItem(`referralStats_${storedUsername}`);
+    if (storedStats) {
+      try {
+        const parsedStats = JSON.parse(storedStats);
+        console.log(`Loaded stats for ${storedUsername}:`, parsedStats);
+        setReferralStats(parsedStats);
+      } catch (error) {
+        console.error('Error parsing referral stats:', error);
+      }
+    }
+  };
+  
   useEffect(() => {
     // Check if user is a premium member
     const premiumStatus = localStorage.getItem("isPremiumMember") === "true";
     setIsPremium(premiumStatus);
     
-    // Get user data
-    const storedUsername = localStorage.getItem("username");
-    if (storedUsername) {
-      setUsername(storedUsername);
-    }
+    // Get user data and initial stats
+    loadReferralStats();
     
-    // Load referral stats from localStorage
-    // In a real implementation, this would come from your backend
-    const storedStats = localStorage.getItem(`referralStats_${username}`);
-    if (storedStats) {
-      setReferralStats(JSON.parse(storedStats));
-    }
-  }, [username]);
+    // Set up storage event listener to update stats when they change
+    const handleStorageChange = () => {
+      console.log("Storage changed, reloading stats");
+      loadReferralStats();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Set up polling to check for updates every 500ms as a fallback
+    const intervalId = setInterval(loadReferralStats, 500);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(intervalId);
+    };
+  }, []);
   
   const handleCopyLink = () => {
     navigator.clipboard.writeText(affiliateLink);

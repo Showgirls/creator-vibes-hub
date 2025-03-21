@@ -49,7 +49,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
     const referralCode = localStorage.getItem('referredBy');
     if (referralCode) {
       setReferredBy(referralCode);
-      console.log('User was referred by:', referralCode);
+      console.log('User was referred by:', referralCode, new Date().toISOString());
     }
   }, []);
 
@@ -79,17 +79,39 @@ const Index = ({ isRegister = false }: IndexProps) => {
     };
     localStorage.setItem(`referralStats_${values.username}`, JSON.stringify(initialStats));
     
-    // If the user was referred, update the referrer's earnings
+    // If the user was referred, increment referrer's stats
     if (referredBy) {
-      const referrerStats = localStorage.getItem(`referralStats_${referredBy}`);
-      if (referrerStats) {
-        const stats = JSON.parse(referrerStats);
-        stats.earnings += 1.00; // Add $1 for the signup (simulated earnings)
-        localStorage.setItem(`referralStats_${referredBy}`, JSON.stringify(stats));
-      }
+      console.log(`Processing referral completion for referrer: ${referredBy}`);
       
-      // In a real implementation, you would call your backend API here
-      console.log(`Updated stats for referrer: ${referredBy}`);
+      try {
+        const referrerStats = localStorage.getItem(`referralStats_${referredBy}`);
+        if (referrerStats) {
+          const stats = JSON.parse(referrerStats);
+          console.log(`Current stats for ${referredBy} before signup credit:`, stats);
+          
+          // We specifically want to increment the members count
+          stats.members = Number(stats.members) + 1;
+          
+          localStorage.setItem(`referralStats_${referredBy}`, JSON.stringify(stats));
+          console.log(`Updated stats for ${referredBy} after signup:`, stats);
+          
+          // Dispatch storage event to notify other tabs/windows
+          window.dispatchEvent(new Event('storage'));
+        } else {
+          // Initialize stats for this referrer with one member
+          console.log(`No existing stats found for ${referredBy}, creating new entry`);
+          localStorage.setItem(`referralStats_${referredBy}`, JSON.stringify({
+            members: 1,
+            models: 0,
+            earnings: 0
+          }));
+          
+          // Dispatch storage event to notify other tabs/windows
+          window.dispatchEvent(new Event('storage'));
+        }
+      } catch (error) {
+        console.error('Error updating referrer stats on signup:', error);
+      }
     }
     
     toast.success("Account created successfully!");
