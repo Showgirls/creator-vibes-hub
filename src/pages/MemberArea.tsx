@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,40 +28,6 @@ const MemberArea = () => {
   const tokenAddress = "3SXgM5nXZ5HZbhPyzaEjfVu5uShDjFPaM7a8TFg9moFm";
   const adminAddress = "44o43y41gytnCtJhaENskAYFoZqg5WyMVskMirbK6bZx";
   
-  // Add a listener for storage events to update stats in real-time across tabs
-  useEffect(() => {
-    const handleStorageChange = () => {
-      loadReferralStats();
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
-  
-  useEffect(() => {
-    // Check if user is a premium member
-    const premiumStatus = localStorage.getItem("isPremiumMember") === "true";
-    setIsPremium(premiumStatus);
-    
-    // Get user data
-    const storedUsername = localStorage.getItem("username");
-    if (storedUsername) {
-      setUsername(storedUsername);
-      
-      // Initial load of referral stats
-      loadReferralStats();
-      
-      // Set up an interval to check for stats updates frequently
-      const statsInterval = setInterval(loadReferralStats, 500);
-      
-      return () => clearInterval(statsInterval);
-    }
-  }, []);
-  
-  // Function to load referral stats
   const loadReferralStats = () => {
     try {
       const storedUsername = localStorage.getItem("username");
@@ -70,16 +35,24 @@ const MemberArea = () => {
       
       console.log('Loading referral stats for:', storedUsername);
       
-      const storedStats = localStorage.getItem(`referralStats_${storedUsername}`);
+      const statsKey = `referralStats_${storedUsername}`;
+      const storedStats = localStorage.getItem(statsKey);
+      
+      console.log(`Retrieved stats for ${storedUsername} from localStorage:`, storedStats);
+      
       if (storedStats) {
         try {
           const parsedStats = JSON.parse(storedStats);
-          console.log('Found stats:', parsedStats);
+          console.log('Parsed stats:', parsedStats);
           
-          setReferralStats({
+          // Ensure we're working with numbers
+          const updatedStats = {
             members: Number(parsedStats.members || 0),
             earnings: Number(parsedStats.earnings || 0)
-          });
+          };
+          
+          console.log('Setting stats state to:', updatedStats);
+          setReferralStats(updatedStats);
         } catch (e) {
           console.error('Error parsing referral stats:', e);
           // Initialize with zeros if there's an error
@@ -95,13 +68,85 @@ const MemberArea = () => {
           members: 0,
           earnings: 0
         };
-        localStorage.setItem(`referralStats_${storedUsername}`, JSON.stringify(initialStats));
+        localStorage.setItem(statsKey, JSON.stringify(initialStats));
         setReferralStats(initialStats);
       }
     } catch (error) {
       console.error('Error loading referral stats:', error);
     }
   };
+  
+  // Handle custom referral stats updated event
+  useEffect(() => {
+    const handleReferralStatsUpdated = (event: CustomEvent) => {
+      const { referrer, stats } = event.detail;
+      console.log('Received referralStatsUpdated event:', { referrer, stats });
+      
+      // If this is for the current user, update the UI
+      const storedUsername = localStorage.getItem("username");
+      if (storedUsername === referrer) {
+        console.log('Updating stats display for current user:', stats);
+        setReferralStats({
+          members: Number(stats.members),
+          earnings: Number(stats.earnings)
+        });
+      }
+    };
+    
+    // Add event listener for custom event
+    window.addEventListener('referralStatsUpdated', 
+      handleReferralStatsUpdated as EventListener);
+    
+    // Add listener for storage events from other tabs
+    const handleStorageChange = (e: StorageEvent) => {
+      console.log('Storage event detected:', e);
+      const storedUsername = localStorage.getItem("username");
+      
+      if (e.key === `referralStats_${storedUsername}` && e.newValue) {
+        try {
+          console.log('Storage event contains updated stats:', e.newValue);
+          const updatedStats = JSON.parse(e.newValue);
+          setReferralStats({
+            members: Number(updatedStats.members),
+            earnings: Number(updatedStats.earnings)
+          });
+        } catch (error) {
+          console.error('Error handling storage event:', error);
+        }
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('referralStatsUpdated', 
+        handleReferralStatsUpdated as EventListener);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+  
+  // Effect to load user data and initiate polling for stats
+  useEffect(() => {
+    // Check if user is a premium member
+    const premiumStatus = localStorage.getItem("isPremiumMember") === "true";
+    setIsPremium(premiumStatus);
+    
+    // Get user data
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+      
+      // Initial load of referral stats
+      loadReferralStats();
+      
+      // Set up an interval to poll for stats updates (more frequently)
+      const statsInterval = setInterval(() => {
+        loadReferralStats();
+      }, 300); // Check every 300ms
+      
+      return () => clearInterval(statsInterval);
+    }
+  }, []);
   
   const handleCopyLink = () => {
     navigator.clipboard.writeText(affiliateLink);
