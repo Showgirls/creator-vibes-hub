@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 
 // Login form schema
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  username: z.string().min(3, "Username must be at least 3 characters"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -31,7 +31,7 @@ const Login = () => {
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
   });
@@ -40,36 +40,37 @@ const Login = () => {
     // Reset any previous error
     setLoginError(null);
     
-    // Get all users from localStorage
-    const allUsers = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('user_')) {
-        try {
-          const userData = JSON.parse(localStorage.getItem(key) || '{}');
-          allUsers.push(userData);
-        } catch (e) {
-          console.error('Error parsing user data:', e);
-        }
-      }
+    // Directly check for the username in localStorage
+    const userKey = `user_${values.username}`;
+    const userDataStr = localStorage.getItem(userKey);
+    
+    if (!userDataStr) {
+      setLoginError("Invalid username or password");
+      toast.error("Invalid username or password");
+      return;
     }
     
-    // Find user with matching email and password
-    const user = allUsers.find(user => 
-      user.email === values.email && user.password === values.password
-    );
-    
-    if (user) {
-      // Set active user in localStorage
-      localStorage.setItem("activeUser", user.username);
-      localStorage.setItem("isLoggedIn", "true");
+    try {
+      // Parse the stored user data
+      const userData = JSON.parse(userDataStr);
       
-      console.log(`User ${user.username} logged in successfully`);
-      toast.success("Login successful!");
-      navigate("/member-area");
-    } else {
-      setLoginError("Invalid email or password");
-      toast.error("Invalid email or password");
+      // Verify the password
+      if (userData.password === values.password) {
+        // Set active user in localStorage
+        localStorage.setItem("activeUser", values.username);
+        localStorage.setItem("isLoggedIn", "true");
+        
+        console.log(`User ${values.username} logged in successfully`);
+        toast.success("Login successful!");
+        navigate("/member-area");
+      } else {
+        setLoginError("Invalid username or password");
+        toast.error("Invalid username or password");
+      }
+    } catch (e) {
+      console.error('Error parsing user data:', e);
+      setLoginError("An error occurred during login");
+      toast.error("An error occurred during login");
     }
   };
 
@@ -100,12 +101,12 @@ const Login = () => {
             >
               <FormField
                 control={form.control}
-                name="email"
+                name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="email@example.com" {...field} />
+                      <Input placeholder="johndoe" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
