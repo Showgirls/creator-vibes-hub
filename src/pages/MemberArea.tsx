@@ -42,10 +42,27 @@ const MemberArea = () => {
     
     // Load referral stats from localStorage
     // In a real implementation, this would come from your backend
-    const storedStats = localStorage.getItem(`referralStats_${username}`);
-    if (storedStats) {
-      setReferralStats(JSON.parse(storedStats));
-    }
+    const loadReferralStats = () => {
+      const storedStats = localStorage.getItem(`referralStats_${username}`);
+      if (storedStats) {
+        setReferralStats(JSON.parse(storedStats));
+      } else {
+        // If no stats found, initialize with zeros
+        const initialStats = {
+          members: 0,
+          earnings: 0
+        };
+        localStorage.setItem(`referralStats_${username}`, JSON.stringify(initialStats));
+        setReferralStats(initialStats);
+      }
+    };
+    
+    loadReferralStats();
+    
+    // Set up an interval to check for stats updates (e.g., from other tabs)
+    const statsInterval = setInterval(loadReferralStats, 5000);
+    
+    return () => clearInterval(statsInterval);
   }, [username]);
   
   const handleCopyLink = () => {

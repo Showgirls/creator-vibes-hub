@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
@@ -42,16 +42,29 @@ interface IndexProps {
 
 const Index = ({ isRegister = false }: IndexProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [referredBy, setReferredBy] = useState<string | null>(null);
 
-  // Get referral information from localStorage on component mount
+  // Get referral information from URL or localStorage on component mount
   useEffect(() => {
-    const referralCode = localStorage.getItem('referredBy');
-    if (referralCode) {
-      setReferredBy(referralCode);
-      console.log('User was referred by:', referralCode);
+    // First check URL for referral code
+    const params = new URLSearchParams(location.search);
+    const refCode = params.get('ref');
+    
+    if (refCode) {
+      // Save the referral code to localStorage
+      localStorage.setItem('referredBy', refCode);
+      setReferredBy(refCode);
+      console.log('User was referred by:', refCode);
+    } else {
+      // Check localStorage if no URL param
+      const storedRefCode = localStorage.getItem('referredBy');
+      if (storedRefCode) {
+        setReferredBy(storedRefCode);
+        console.log('User was referred by (from storage):', storedRefCode);
+      }
     }
-  }, []);
+  }, [location]);
 
   const signupForm = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
@@ -74,22 +87,22 @@ const Index = ({ isRegister = false }: IndexProps) => {
     // Initialize referral stats for this user
     const initialStats = {
       members: 0,
-      models: 0,
       earnings: 0
     };
     localStorage.setItem(`referralStats_${values.username}`, JSON.stringify(initialStats));
     
-    // If the user was referred, update the referrer's earnings
+    // If the user was referred, update the referrer's stats
     if (referredBy) {
       const referrerStats = localStorage.getItem(`referralStats_${referredBy}`);
       if (referrerStats) {
         const stats = JSON.parse(referrerStats);
-        stats.earnings += 1.00; // Add $1 for the signup (simulated earnings)
+        stats.members += 1; // Increment referred members count
+        stats.earnings += 1.00; // Add $1 for the signup
         localStorage.setItem(`referralStats_${referredBy}`, JSON.stringify(stats));
+        
+        // In a real implementation, you would call your backend API here
+        console.log(`Updated stats for referrer ${referredBy}: +1 member, +$1.00 earnings`);
       }
-      
-      // In a real implementation, you would call your backend API here
-      console.log(`Updated stats for referrer: ${referredBy}`);
     }
     
     toast.success("Account created successfully!");
