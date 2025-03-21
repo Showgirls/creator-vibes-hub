@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
+import { registerUser } from "@/hooks/useAuth";
 
 // Signup form schema
 const signupSchema = z.object({
@@ -47,7 +48,14 @@ const Index = ({ isRegister = false }: IndexProps) => {
 
   // Parse referral info from URL on component mount
   useEffect(() => {
-    console.log("Index page - Initializing...");
+    // Check if user is already logged in
+    const username = localStorage.getItem("user_username");
+    
+    if (username) {
+      console.log("User already logged in:", username);
+      navigate("/member-area");
+      return;
+    }
     
     // Check URL for referral code
     const urlParams = new URLSearchParams(window.location.search);
@@ -63,28 +71,6 @@ const Index = ({ isRegister = false }: IndexProps) => {
       if (storedReferral) {
         console.log('Using stored referral:', storedReferral);
         setReferredBy(storedReferral);
-      }
-    }
-    
-    // Check if user is already logged in
-    const isLoggedInValue = localStorage.getItem("isLoggedIn");
-    const activeUser = localStorage.getItem("activeUser");
-    
-    console.log("Index page initial check - isLoggedIn value:", isLoggedInValue, "activeUser:", activeUser);
-    
-    if (isLoggedInValue === "true" && activeUser) {
-      // Verify the user exists in allUsers
-      try {
-        const usersStr = localStorage.getItem("allUsers");
-        if (usersStr && usersStr !== "undefined" && usersStr !== "null") {
-          const allUsers = JSON.parse(usersStr);
-          if (allUsers && allUsers[activeUser]) {
-            console.log("User already logged in, redirecting to member area");
-            navigate("/member-area");
-          }
-        }
-      } catch (error) {
-        console.error("Error checking existing login:", error);
       }
     }
   }, [navigate]);
@@ -108,148 +94,48 @@ const Index = ({ isRegister = false }: IndexProps) => {
     try {
       console.log("Attempting to register user:", values.username);
       
-      // Initialize users object with better error handling
-      let allUsers = {};
-      try {
-        const storedUsers = localStorage.getItem("allUsers");
-        console.log("Retrieved users string:", storedUsers);
+      // Register the new user
+      const result = registerUser(values.username, values.email, values.password);
+      
+      if (result.success) {
+        console.log("Registration successful for:", values.username);
         
-        if (storedUsers && storedUsers !== "undefined" && storedUsers !== "null") {
+        // Process the referral if it exists
+        if (referredBy) {
+          console.log("Processing referral for:", referredBy);
           try {
-            allUsers = JSON.parse(storedUsers);
-            console.log("Parsed existing users:", Object.keys(allUsers));
+            // Try to update the referrer's stats
+            let referralStats = {};
+            try {
+              const storedStats = localStorage.getItem("referral_stats");
+              referralStats = storedStats ? JSON.parse(storedStats) : {};
+            } catch (e) {
+              console.error("Error parsing referral stats:", e);
+              referralStats = {};
+            }
+            
+            // Update or create stats for the referrer
+            if (!referralStats[referredBy]) {
+              referralStats[referredBy] = { members: 0, earnings: 0 };
+            }
+            
+            referralStats[referredBy].members = (referralStats[referredBy].members || 0) + 1;
+            localStorage.setItem("referral_stats", JSON.stringify(referralStats));
+            console.log("Updated referral stats for:", referredBy);
           } catch (e) {
-            console.error('Error parsing stored users, resetting:', e);
-            allUsers = {};
+            console.error("Error updating referral stats:", e);
           }
-        } else {
-          console.log("No existing users found, creating new users object");
-          allUsers = {};
         }
-      } catch (e) {
-        console.error('Error retrieving stored users, resetting:', e);
-        allUsers = {};
-      }
-      
-      // Check if username already exists
-      if (allUsers[values.username]) {
-        setRegistrationError("Username already exists");
-        toast.error("Username already exists");
-        return;
-      }
-      
-      // Check if email is already used
-      let emailExists = false;
-      Object.values(allUsers).forEach((user: any) => {
-        if (user.email === values.email) {
-          emailExists = true;
-        }
-      });
-      
-      if (emailExists) {
-        setRegistrationError("Email already in use");
-        toast.error("Email already in use");
-        return;
-      }
-      
-      // Create user object with credentials
-      const userObject = {
-        username: values.username,
-        email: values.email,
-        password: values.password,
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-        isPremium: false
-      };
-      
-      // Add the new user to the allUsers object
-      allUsers[values.username] = userObject;
-      
-      // Save all users to localStorage with explicit conversion to JSON
-      const allUsersJson = JSON.stringify(allUsers);
-      console.log("Saving users to localStorage:", Object.keys(allUsers));
-      console.log("JSON to save:", allUsersJson);
-      
-      localStorage.setItem("allUsers", allUsersJson);
-      
-      // Verify the data was saved correctly
-      const savedData = localStorage.getItem("allUsers");
-      console.log("Verification - saved user data:", savedData);
-      
-      // Set active user in separate operations to ensure they complete
-      localStorage.setItem("activeUser", values.username);
-      localStorage.setItem("isLoggedIn", "true");
-      
-      console.log("Login state set - activeUser:", values.username);
-      console.log("Login state set - isLoggedIn:", "true");
-      
-      // Initialize referral stats for this user
-      let referralStatsObj = {};
-      try {
-        const storedStats = localStorage.getItem("referralStats");
-        if (storedStats && storedStats !== "undefined" && storedStats !== "null") {
-          try {
-            referralStatsObj = JSON.parse(storedStats);
-          } catch (e) {
-            console.error('Error parsing stored stats, resetting:', e);
-            referralStatsObj = {};
-          }
-        } else {
-          referralStatsObj = {};
-        }
-      } catch (e) {
-        console.error('Error retrieving referral stats, resetting:', e);
-        referralStatsObj = {};
-      }
-      
-      referralStatsObj[values.username] = {
-        members: 0,
-        earnings: 0
-      };
-      
-      console.log("Saving referral stats:", referralStatsObj);
-      localStorage.setItem("referralStats", JSON.stringify(referralStatsObj));
-      
-      // If the user was referred, increment referrer's stats
-      if (referredBy) {
-        console.log(`Processing referral completion for referrer: ${referredBy}`);
         
-        try {
-          if (referralStatsObj[referredBy]) {
-            const stats = referralStatsObj[referredBy];
-            console.log(`Current stats for ${referredBy} before signup credit:`, stats);
-            
-            // We specifically want to increment the members count
-            stats.members = Number(stats.members) + 1;
-            
-            referralStatsObj[referredBy] = stats;
-            localStorage.setItem("referralStats", JSON.stringify(referralStatsObj));
-            console.log(`Updated stats for ${referredBy} after signup:`, stats);
-          } else {
-            // Initialize stats for this referrer with one member
-            console.log(`No existing stats found for ${referredBy}, creating new entry`);
-            referralStatsObj[referredBy] = {
-              members: 1,
-              earnings: 0
-            };
-            localStorage.setItem("referralStats", JSON.stringify(referralStatsObj));
-          }
-        } catch (error) {
-          console.error('Error updating referrer stats on signup:', error);
-        }
+        toast.success("Account created successfully!");
+        navigate("/member-area");
+      } else {
+        console.error("Registration failed:", result.error);
+        setRegistrationError(result.error || "Registration failed");
+        toast.error(result.error || "Registration failed");
       }
-      
-      // Verify login state again before redirect
-      console.log("Final verification before redirect:");
-      console.log("- isLoggedIn:", localStorage.getItem("isLoggedIn"));
-      console.log("- activeUser:", localStorage.getItem("activeUser"));
-      console.log("- allUsers contains user:", 
-        localStorage.getItem("allUsers")?.includes(values.username));
-      
-      toast.success("Account created successfully!");
-      navigate("/member-area");
     } catch (e) {
-      console.error('Error saving user data:', e);
+      console.error('Error during registration:', e);
       setRegistrationError("An error occurred during registration");
       toast.error("An error occurred during registration");
     }

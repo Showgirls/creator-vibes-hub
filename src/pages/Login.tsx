@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
+import { loginUser, getAllUsers } from "@/hooks/useAuth";
 
 // Login form schema
 const loginSchema = z.object({
@@ -30,44 +31,11 @@ const Login = () => {
   
   // Check if user is already logged in
   useEffect(() => {
-    console.log("Login page - Checking existing login...");
+    const username = localStorage.getItem("user_username");
     
-    // Get the raw values to avoid type coercion
-    const isLoggedInValue = localStorage.getItem("isLoggedIn");
-    const activeUser = localStorage.getItem("activeUser");
-    
-    console.log("Login page initial check - isLoggedIn value:", isLoggedInValue, "activeUser:", activeUser);
-    
-    if (isLoggedInValue === "true" && activeUser) {
-      // Verify the user exists in allUsers
-      try {
-        const usersStr = localStorage.getItem("allUsers");
-        console.log("Login page - Retrieved users string:", usersStr);
-        
-        if (!usersStr || usersStr === "undefined" || usersStr === "null") {
-          console.log("Login page - No valid users found in localStorage");
-          // Clear potentially invalid login state
-          localStorage.removeItem("isLoggedIn");
-          localStorage.removeItem("activeUser");
-          return;
-        }
-        
-        const allUsers = JSON.parse(usersStr);
-        if (allUsers && allUsers[activeUser]) {
-          console.log("User already logged in, redirecting to member area", activeUser);
-          navigate("/member-area");
-        } else {
-          console.log("User not found in allUsers:", activeUser);
-          // Clear invalid login state
-          localStorage.removeItem("isLoggedIn");
-          localStorage.removeItem("activeUser");
-        }
-      } catch (error) {
-        console.error("Error checking existing login:", error);
-        // Clear potentially corrupted data
-        localStorage.removeItem("isLoggedIn");
-        localStorage.removeItem("activeUser");
-      }
+    if (username) {
+      console.log("User already logged in:", username);
+      navigate("/member-area");
     }
   }, [navigate]);
   
@@ -86,30 +54,11 @@ const Login = () => {
     try {
       console.log("Login attempt for user:", values.username);
       
-      // Get users from localStorage
-      let allUsers = {};
-      try {
-        const usersStr = localStorage.getItem("allUsers");
-        console.log("Retrieved users string:", usersStr);
-        
-        if (!usersStr || usersStr === "undefined" || usersStr === "null") {
-          console.log("No users found in localStorage");
-        } else {
-          try {
-            allUsers = JSON.parse(usersStr);
-            console.log("Parsed users object:", Object.keys(allUsers));
-          } catch (e) {
-            console.error("Error parsing users:", e);
-            allUsers = {};
-          }
-        }
-      } catch (e) {
-        console.error("Error retrieving users:", e);
-        allUsers = {};
-      }
+      // Get all users
+      const allUsers = getAllUsers();
       
       // Check if the user exists
-      if (!allUsers || !allUsers[values.username]) {
+      if (!allUsers[values.username]) {
         console.log(`Login failed: User ${values.username} not found`);
         setLoginError("Invalid username or password");
         toast.error("Invalid username or password");
@@ -118,25 +67,24 @@ const Login = () => {
       
       // Verify the password
       const userData = allUsers[values.username];
-      console.log(`Checking password for ${values.username}`);
       
       if (userData.password === values.password) {
-        // Set login state in localStorage
-        console.log(`Setting login state for ${values.username}`);
-        localStorage.setItem("activeUser", values.username);
-        localStorage.setItem("isLoggedIn", "true");
-        
-        // Update user object with lastLogin timestamp
+        // Update last login time
         userData.lastLogin = new Date().toISOString();
         allUsers[values.username] = userData;
+        localStorage.setItem("all_users", JSON.stringify(allUsers));
         
-        // Save updated user data back to localStorage
-        localStorage.setItem("allUsers", JSON.stringify(allUsers));
-        console.log(`User data updated and saved to localStorage`);
+        // Login the user
+        const success = loginUser(values.username, userData);
         
-        console.log(`User ${values.username} logged in successfully`);
-        toast.success("Login successful!");
-        navigate("/member-area");
+        if (success) {
+          console.log(`User ${values.username} logged in successfully`);
+          toast.success("Login successful!");
+          navigate("/member-area");
+        } else {
+          setLoginError("Failed to save login data");
+          toast.error("Login failed");
+        }
       } else {
         console.log(`Login failed: Incorrect password for ${values.username}`);
         setLoginError("Invalid username or password");
