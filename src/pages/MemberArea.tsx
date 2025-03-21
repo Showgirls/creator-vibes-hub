@@ -29,6 +29,19 @@ const MemberArea = () => {
   const tokenAddress = "3SXgM5nXZ5HZbhPyzaEjfVu5uShDjFPaM7a8TFg9moFm";
   const adminAddress = "44o43y41gytnCtJhaENskAYFoZqg5WyMVskMirbK6bZx";
   
+  // Add a listener for storage events to update stats in real-time across tabs
+  useEffect(() => {
+    const handleStorageChange = () => {
+      loadReferralStats();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+  
   useEffect(() => {
     // Check if user is a premium member
     const premiumStatus = localStorage.getItem("isPremiumMember") === "true";
@@ -39,41 +52,56 @@ const MemberArea = () => {
     if (storedUsername) {
       setUsername(storedUsername);
       
-      // Load referral stats from localStorage
-      const loadReferralStats = () => {
-        try {
-          console.log('Loading referral stats for:', storedUsername);
-          
-          const storedStats = localStorage.getItem(`referralStats_${storedUsername}`);
-          if (storedStats) {
-            const parsedStats = JSON.parse(storedStats);
-            console.log('Found stats:', parsedStats);
-            setReferralStats(parsedStats);
-          } else {
-            // If no stats found, initialize with zeros
-            console.log('No stats found, initializing with zeros');
-            const initialStats = {
-              members: 0,
-              earnings: 0
-            };
-            localStorage.setItem(`referralStats_${storedUsername}`, JSON.stringify(initialStats));
-            setReferralStats(initialStats);
-          }
-        } catch (error) {
-          console.error('Error loading referral stats:', error);
-        }
-      };
-      
-      // Initial load
+      // Initial load of referral stats
       loadReferralStats();
       
-      // Set up an interval to check for stats updates more frequently (every second)
-      // This helps detect changes caused by referrals in other tabs or windows
-      const statsInterval = setInterval(loadReferralStats, 1000);
+      // Set up an interval to check for stats updates frequently
+      const statsInterval = setInterval(loadReferralStats, 500);
       
       return () => clearInterval(statsInterval);
     }
-  }, [username]);
+  }, []);
+  
+  // Function to load referral stats
+  const loadReferralStats = () => {
+    try {
+      const storedUsername = localStorage.getItem("username");
+      if (!storedUsername) return;
+      
+      console.log('Loading referral stats for:', storedUsername);
+      
+      const storedStats = localStorage.getItem(`referralStats_${storedUsername}`);
+      if (storedStats) {
+        try {
+          const parsedStats = JSON.parse(storedStats);
+          console.log('Found stats:', parsedStats);
+          
+          setReferralStats({
+            members: Number(parsedStats.members || 0),
+            earnings: Number(parsedStats.earnings || 0)
+          });
+        } catch (e) {
+          console.error('Error parsing referral stats:', e);
+          // Initialize with zeros if there's an error
+          setReferralStats({
+            members: 0,
+            earnings: 0
+          });
+        }
+      } else {
+        // If no stats found, initialize with zeros
+        console.log('No stats found, initializing with zeros');
+        const initialStats = {
+          members: 0,
+          earnings: 0
+        };
+        localStorage.setItem(`referralStats_${storedUsername}`, JSON.stringify(initialStats));
+        setReferralStats(initialStats);
+      }
+    } catch (error) {
+      console.error('Error loading referral stats:', error);
+    }
+  };
   
   const handleCopyLink = () => {
     navigator.clipboard.writeText(affiliateLink);

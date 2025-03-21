@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -57,13 +58,8 @@ const Index = ({ isRegister = false }: IndexProps) => {
         setReferredBy(refCode);
         console.log('User was referred by:', refCode);
         
-        // Immediately update the referrer's stats when someone visits with their referral link
-        // Make sure to update it only once per session
-        const alreadyUpdated = sessionStorage.getItem(`referred_by_${refCode}`);
-        if (!alreadyUpdated) {
-          updateReferrerStats(refCode);
-          sessionStorage.setItem(`referred_by_${refCode}`, 'true');
-        }
+        // Update referrer stats immediately when a user visits with their referral link
+        updateReferrerStats(refCode);
       } else {
         // Check localStorage if no URL param
         const storedRefCode = localStorage.getItem('referredBy');
@@ -82,26 +78,41 @@ const Index = ({ isRegister = false }: IndexProps) => {
     try {
       console.log('Updating stats for referrer:', referrer);
       
-      let stats = {
-        members: 1,
-        earnings: 1.00
+      // Get current stats or initialize with default values
+      let currentStats = {
+        members: 0,
+        earnings: 0
       };
       
-      const referrerStats = localStorage.getItem(`referralStats_${referrer}`);
-      if (referrerStats) {
+      const referrerStatsString = localStorage.getItem(`referralStats_${referrer}`);
+      if (referrerStatsString) {
         try {
-          const parsedStats = JSON.parse(referrerStats);
-          stats = {
-            members: (parsedStats.members || 0) + 1,
-            earnings: (parsedStats.earnings || 0) + 1.00
+          const parsedStats = JSON.parse(referrerStatsString);
+          currentStats = {
+            members: Number(parsedStats.members || 0),
+            earnings: Number(parsedStats.earnings || 0)
           };
         } catch (e) {
           console.error('Error parsing referrer stats:', e);
         }
       }
       
-      localStorage.setItem(`referralStats_${referrer}`, JSON.stringify(stats));
-      console.log(`Updated stats for referrer ${referrer}:`, stats);
+      // Update stats
+      const updatedStats = {
+        members: currentStats.members + 1,
+        earnings: currentStats.earnings + 1.00
+      };
+      
+      console.log(`Previous stats for ${referrer}:`, currentStats);
+      console.log(`Updated stats for ${referrer}:`, updatedStats);
+      
+      // Save updated stats back to localStorage
+      localStorage.setItem(`referralStats_${referrer}`, JSON.stringify(updatedStats));
+      
+      // Force a refresh of localStorage to ensure other tabs/windows see the update
+      window.dispatchEvent(new Event('storage'));
+      
+      console.log(`Successfully updated stats for referrer ${referrer}`);
     } catch (error) {
       console.error('Error updating referrer stats:', error);
     }
@@ -134,14 +145,9 @@ const Index = ({ isRegister = false }: IndexProps) => {
       localStorage.setItem(`referralStats_${values.username}`, JSON.stringify(initialStats));
       
       // If the user was referred, update the referrer's stats again on signup
-      // This ensures both visit and signup are counted
       if (referredBy) {
-        // Use a different key for signup vs. visit
-        const alreadyUpdatedOnSignup = sessionStorage.getItem(`referred_by_${referredBy}_signup`);
-        if (!alreadyUpdatedOnSignup) {
-          updateReferrerStats(referredBy);
-          sessionStorage.setItem(`referred_by_${referredBy}_signup`, 'true');
-        }
+        // Update referrer stats
+        updateReferrerStats(referredBy);
       }
       
       toast.success("Account created successfully!");
