@@ -41,8 +41,9 @@ const Login = () => {
     setLoginError(null);
     
     try {
-      // Store all users in a single key to ensure accessibility across devices
+      // Get all users from localStorage
       const allUsers = JSON.parse(localStorage.getItem("allUsers") || "{}");
+      console.log("Available users:", Object.keys(allUsers));
       
       // Check if the user exists
       if (!allUsers[values.username]) {

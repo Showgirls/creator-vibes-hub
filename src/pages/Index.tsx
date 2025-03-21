@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,12 +45,23 @@ const Index = ({ isRegister = false }: IndexProps) => {
   const [referredBy, setReferredBy] = useState<string | null>(null);
   const [registrationError, setRegistrationError] = useState<string | null>(null);
 
-  // Get referral information from localStorage on component mount
+  // Parse referral info from URL on component mount
   useEffect(() => {
-    const referralCode = localStorage.getItem('referredBy');
-    if (referralCode) {
-      setReferredBy(referralCode);
-      console.log('User was referred by:', referralCode, new Date().toISOString());
+    // Check URL for referral code
+    const urlParams = new URLSearchParams(window.location.search);
+    const ref = urlParams.get('ref');
+    
+    if (ref) {
+      console.log('Setting referral from URL:', ref);
+      localStorage.setItem('referredBy', ref);
+      setReferredBy(ref);
+    } else {
+      // Check localStorage if no URL parameter
+      const storedReferral = localStorage.getItem('referredBy');
+      if (storedReferral) {
+        console.log('Using stored referral:', storedReferral);
+        setReferredBy(storedReferral);
+      }
     }
   }, []);
 
@@ -71,7 +83,16 @@ const Index = ({ isRegister = false }: IndexProps) => {
     
     try {
       // Get all users from localStorage or initialize empty object
-      const allUsers = JSON.parse(localStorage.getItem("allUsers") || "{}");
+      let allUsers = {};
+      try {
+        const storedUsers = localStorage.getItem("allUsers");
+        allUsers = storedUsers ? JSON.parse(storedUsers) : {};
+      } catch (e) {
+        console.error('Error parsing stored users, resetting:', e);
+        allUsers = {};
+      }
+      
+      console.log("Current stored users:", Object.keys(allUsers));
       
       // Check if username already exists
       if (allUsers[values.username]) {
@@ -108,13 +129,22 @@ const Index = ({ isRegister = false }: IndexProps) => {
       
       // Save all users to localStorage
       localStorage.setItem("allUsers", JSON.stringify(allUsers));
+      console.log("Saved user data for:", values.username);
       
       // Set active user
       localStorage.setItem("activeUser", values.username);
       localStorage.setItem("isLoggedIn", "true");
       
       // Initialize referral stats for this user
-      const referralStatsObj = JSON.parse(localStorage.getItem("referralStats") || "{}");
+      let referralStatsObj = {};
+      try {
+        const storedStats = localStorage.getItem("referralStats");
+        referralStatsObj = storedStats ? JSON.parse(storedStats) : {};
+      } catch (e) {
+        console.error('Error parsing stored stats, resetting:', e);
+        referralStatsObj = {};
+      }
+      
       referralStatsObj[values.username] = {
         members: 0,
         earnings: 0
@@ -128,7 +158,15 @@ const Index = ({ isRegister = false }: IndexProps) => {
         console.log(`Processing referral completion for referrer: ${referredBy}`);
         
         try {
-          const referralStats = JSON.parse(localStorage.getItem("referralStats") || "{}");
+          let referralStats = {};
+          try {
+            const storedStats = localStorage.getItem("referralStats");
+            referralStats = storedStats ? JSON.parse(storedStats) : {};
+          } catch (e) {
+            console.error('Error parsing referral stats, resetting:', e);
+            referralStats = {};
+          }
+          
           if (referralStats[referredBy]) {
             const stats = referralStats[referredBy];
             console.log(`Current stats for ${referredBy} before signup credit:`, stats);
