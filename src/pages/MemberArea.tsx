@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,7 +16,8 @@ const MemberArea = () => {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
-  const affiliateLink = "https://fkitt.com/ref/user123";
+  const [username, setUsername] = useState("user123");
+  const affiliateLink = `https://fkitt.com/ref/${username}`;
   
   // Token and admin addresses for payment
   const tokenAddress = "3SXgM5nXZ5HZbhPyzaEjfVu5uShDjFPaM7a8TFg9moFm";
@@ -25,6 +27,12 @@ const MemberArea = () => {
     // Check if user is a premium member
     const premiumStatus = localStorage.getItem("isPremiumMember") === "true";
     setIsPremium(premiumStatus);
+    
+    // Get user data
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
   }, []);
   
   const handleCopyLink = () => {
