@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,7 +16,14 @@ const MemberArea = () => {
   const [copied, setCopied] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [username, setUsername] = useState("user123");
-  const affiliateLink = `https://fkitt.com/ref/${username}`;
+  const [referralStats, setReferralStats] = useState({
+    members: 0,
+    models: 0,
+    earnings: 0
+  });
+  
+  // Generate affiliate link using the current domain and username
+  const affiliateLink = `${window.location.origin}/?ref=${username}`;
   
   // Token and admin addresses for payment
   const tokenAddress = "3SXgM5nXZ5HZbhPyzaEjfVu5uShDjFPaM7a8TFg9moFm";
@@ -33,7 +39,14 @@ const MemberArea = () => {
     if (storedUsername) {
       setUsername(storedUsername);
     }
-  }, []);
+    
+    // Load referral stats from localStorage
+    // In a real implementation, this would come from your backend
+    const storedStats = localStorage.getItem(`referralStats_${username}`);
+    if (storedStats) {
+      setReferralStats(JSON.parse(storedStats));
+    }
+  }, [username]);
   
   const handleCopyLink = () => {
     navigator.clipboard.writeText(affiliateLink);
@@ -50,6 +63,7 @@ const MemberArea = () => {
   
   const handlePaymentSuccess = () => {
     setIsPremium(true);
+    localStorage.setItem("isPremiumMember", "true");
   };
 
   return (
@@ -203,15 +217,15 @@ const MemberArea = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-muted p-4 rounded-md">
                       <p className="text-muted-foreground text-sm">Referred Members</p>
-                      <p className="text-2xl font-bold text-foreground">0</p>
+                      <p className="text-2xl font-bold text-foreground">{referralStats.members}</p>
                     </div>
                     <div className="bg-muted p-4 rounded-md">
                       <p className="text-muted-foreground text-sm">Referred Models</p>
-                      <p className="text-2xl font-bold text-foreground">0</p>
+                      <p className="text-2xl font-bold text-foreground">{referralStats.models}</p>
                     </div>
                     <div className="bg-muted p-4 rounded-md">
                       <p className="text-muted-foreground text-sm">Total Earnings</p>
-                      <p className="text-2xl font-bold text-foreground">$0.00</p>
+                      <p className="text-2xl font-bold text-foreground">${referralStats.earnings.toFixed(2)}</p>
                     </div>
                   </div>
                 </div>

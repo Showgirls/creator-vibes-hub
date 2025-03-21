@@ -1,6 +1,5 @@
-
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { useEffect, useState } from "react";
 
@@ -11,6 +10,36 @@ const Home = () => {
     minutes: 0,
     seconds: 0
   });
+  
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check for referral in URL
+    const queryParams = new URLSearchParams(location.search);
+    const referralCode = queryParams.get('ref');
+    
+    if (referralCode) {
+      // Store the referral in localStorage
+      localStorage.setItem('referredBy', referralCode);
+      console.log(`User was referred by: ${referralCode}`);
+      
+      // In a real implementation, you'd call your backend API here to track this referral
+      // For now, we'll just simulate by incrementing stats in localStorage
+      const referrerStats = localStorage.getItem(`referralStats_${referralCode}`);
+      if (referrerStats) {
+        const stats = JSON.parse(referrerStats);
+        stats.members += 1;
+        localStorage.setItem(`referralStats_${referralCode}`, JSON.stringify(stats));
+      } else {
+        // Initialize stats for this referrer
+        localStorage.setItem(`referralStats_${referralCode}`, JSON.stringify({
+          members: 1,
+          models: 0,
+          earnings: 0
+        }));
+      }
+    }
+  }, [location]);
 
   useEffect(() => {
     // Set target date: April 28th 2025 at 8pm UTC

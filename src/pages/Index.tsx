@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -42,6 +42,16 @@ interface IndexProps {
 
 const Index = ({ isRegister = false }: IndexProps) => {
   const navigate = useNavigate();
+  const [referredBy, setReferredBy] = useState<string | null>(null);
+
+  // Get referral information from localStorage on component mount
+  useEffect(() => {
+    const referralCode = localStorage.getItem('referredBy');
+    if (referralCode) {
+      setReferredBy(referralCode);
+      console.log('User was referred by:', referralCode);
+    }
+  }, []);
 
   const signupForm = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
@@ -56,8 +66,34 @@ const Index = ({ isRegister = false }: IndexProps) => {
   });
 
   const onSignupSubmit = (values: z.infer<typeof signupSchema>) => {
+    // Save the user's information to localStorage
+    localStorage.setItem("username", values.username);
+    localStorage.setItem("email", values.email);
+    localStorage.setItem("isLoggedIn", "true");
+    
+    // Initialize referral stats for this user
+    const initialStats = {
+      members: 0,
+      models: 0,
+      earnings: 0
+    };
+    localStorage.setItem(`referralStats_${values.username}`, JSON.stringify(initialStats));
+    
+    // If the user was referred, update the referrer's earnings
+    if (referredBy) {
+      const referrerStats = localStorage.getItem(`referralStats_${referredBy}`);
+      if (referrerStats) {
+        const stats = JSON.parse(referrerStats);
+        stats.earnings += 1.00; // Add $1 for the signup (simulated earnings)
+        localStorage.setItem(`referralStats_${referredBy}`, JSON.stringify(stats));
+      }
+      
+      // In a real implementation, you would call your backend API here
+      console.log(`Updated stats for referrer: ${referredBy}`);
+    }
+    
     toast.success("Account created successfully!");
-    navigate("/profile");
+    navigate("/member-area");
   };
 
   return (
@@ -69,6 +105,11 @@ const Index = ({ isRegister = false }: IndexProps) => {
           className="h-24 mb-8"
         />
         <div className="w-full max-w-md space-y-8 glass-card p-8 rounded-lg">
+          {referredBy && (
+            <div className="bg-[#f9166f]/10 p-3 rounded-md border border-[#f9166f]/30 mb-4">
+              <p className="text-sm text-white">You were referred by: <span className="font-semibold">{referredBy}</span></p>
+            </div>
+          )}
           <div className="text-right mb-4">
             <Link to="/login">
               <Button variant="outline" className="border-[#f9166f] text-white hover:bg-[#f9166f]/10">
