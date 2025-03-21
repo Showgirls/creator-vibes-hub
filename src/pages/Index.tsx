@@ -49,29 +49,47 @@ const Index = ({ isRegister = false }: IndexProps) => {
   // Parse referral info from URL on component mount
   useEffect(() => {
     // Check if user is already logged in
-    const username = localStorage.getItem("user_username");
-    
-    if (username) {
-      console.log("User already logged in:", username);
-      navigate("/member-area");
-      return;
-    }
-    
-    // Check URL for referral code
-    const urlParams = new URLSearchParams(window.location.search);
-    const ref = urlParams.get('ref');
-    
-    if (ref) {
-      console.log('Setting referral from URL:', ref);
-      localStorage.setItem('referredBy', ref);
-      setReferredBy(ref);
-    } else {
-      // Check localStorage if no URL parameter
-      const storedReferral = localStorage.getItem('referredBy');
-      if (storedReferral) {
-        console.log('Using stored referral:', storedReferral);
-        setReferredBy(storedReferral);
+    try {
+      const username = localStorage.getItem("user_username");
+      
+      if (username) {
+        // Verify user in all_users
+        const allUsersStr = localStorage.getItem("all_users");
+        if (allUsersStr) {
+          const allUsers = JSON.parse(allUsersStr);
+          if (allUsers[username]) {
+            console.log("User already logged in:", username);
+            navigate("/member-area");
+            return;
+          }
+        }
+        
+        // If we got here, the user data is inconsistent
+        console.log("Inconsistent user data, clearing login");
+        localStorage.removeItem("user_username");
+        localStorage.removeItem("user_data");
       }
+      
+      // Check URL for referral code
+      const urlParams = new URLSearchParams(window.location.search);
+      const ref = urlParams.get('ref');
+      
+      if (ref) {
+        console.log('Setting referral from URL:', ref);
+        localStorage.setItem('referredBy', ref);
+        setReferredBy(ref);
+      } else {
+        // Check localStorage if no URL parameter
+        const storedReferral = localStorage.getItem('referredBy');
+        if (storedReferral) {
+          console.log('Using stored referral:', storedReferral);
+          setReferredBy(storedReferral);
+        }
+      }
+    } catch (error) {
+      console.error("Error checking login state:", error);
+      localStorage.removeItem("user_username");
+      localStorage.removeItem("user_data");
     }
   }, [navigate]);
 

@@ -2,24 +2,44 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+// Create a more robust authentication checking hook
 export const useAuthCheck = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   useEffect(() => {
-    // Simple check for authentication
-    const username = localStorage.getItem("user_username");
-    
-    if (!username) {
-      console.log("No authenticated user found, redirecting to login");
+    // Check for authentication
+    try {
+      const username = localStorage.getItem("user_username");
+      
+      if (!username) {
+        console.log("No authenticated user found, redirecting to login");
+        // Clear any potentially corrupted data
+        localStorage.removeItem("user_data");
+        navigate("/login");
+        return;
+      }
+      
+      // Verify the user exists in the all_users data
+      const allUsersStr = localStorage.getItem("all_users");
+      if (allUsersStr) {
+        const allUsers = JSON.parse(allUsersStr);
+        if (!allUsers[username]) {
+          console.log("User exists in session but not in all_users, logging out");
+          logoutUser();
+          navigate("/login");
+          return;
+        }
+      }
+      
+      // Successfully authenticated
+      console.log("User authenticated:", username);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error("Error during authentication check:", error);
+      logoutUser();
       navigate("/login");
-      return;
     }
-    
-    // Successfully authenticated
-    console.log("User authenticated:", username);
-    setIsAuthenticated(true);
-    
   }, [navigate]);
   
   return isAuthenticated;
@@ -31,6 +51,15 @@ export const loginUser = (username, userData) => {
     // Save user data
     localStorage.setItem("user_username", username);
     localStorage.setItem("user_data", JSON.stringify(userData));
+    
+    // Make sure all_users includes this user
+    const allUsers = getAllUsers();
+    if (!allUsers[username]) {
+      allUsers[username] = userData;
+      localStorage.setItem("all_users", JSON.stringify(allUsers));
+    }
+    
+    console.log("User logged in successfully:", username);
     return true;
   } catch (error) {
     console.error("Error saving user data:", error);
@@ -39,8 +68,13 @@ export const loginUser = (username, userData) => {
 };
 
 export const logoutUser = () => {
-  localStorage.removeItem("user_username");
-  localStorage.removeItem("user_data");
+  try {
+    localStorage.removeItem("user_username");
+    localStorage.removeItem("user_data");
+    console.log("User logged out successfully");
+  } catch (error) {
+    console.error("Error during logout:", error);
+  }
 };
 
 export const getCurrentUser = () => {
@@ -66,11 +100,30 @@ export const updateCurrentUser = (userData) => {
     const username = localStorage.getItem("user_username");
     if (!username) return false;
     
-    localStorage.setItem("user_data", JSON.stringify({
-      ...getCurrentUser(),
+    // First get current user data
+    const currentUser = getCurrentUser();
+    if (!currentUser) return false;
+    
+    // Update user data in localStorage
+    const updatedData = {
+      ...currentUser,
       ...userData,
       lastActivity: new Date().toISOString()
-    }));
+    };
+    
+    // Update in both places for consistency
+    localStorage.setItem("user_data", JSON.stringify(updatedData));
+    
+    // Also update in all_users
+    const allUsers = getAllUsers();
+    if (allUsers[username]) {
+      allUsers[username] = {
+        ...allUsers[username],
+        ...userData,
+        lastActivity: new Date().toISOString()
+      };
+      localStorage.setItem("all_users", JSON.stringify(allUsers));
+    }
     
     return true;
   } catch (error) {
@@ -105,6 +158,7 @@ export const registerUser = (username, email, password) => {
     
     // Save users
     localStorage.setItem("all_users", JSON.stringify(allUsers));
+    console.log("User registered successfully:", username);
     
     // Set up initial referral stats
     const referralStats = JSON.parse(localStorage.getItem("referral_stats") || "{}");

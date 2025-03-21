@@ -31,11 +31,30 @@ const Login = () => {
   
   // Check if user is already logged in
   useEffect(() => {
-    const username = localStorage.getItem("user_username");
-    
-    if (username) {
-      console.log("User already logged in:", username);
-      navigate("/member-area");
+    try {
+      const username = localStorage.getItem("user_username");
+      
+      if (username) {
+        // Verify user in all_users
+        const allUsersStr = localStorage.getItem("all_users");
+        if (allUsersStr) {
+          const allUsers = JSON.parse(allUsersStr);
+          if (allUsers[username]) {
+            console.log("User already logged in:", username);
+            navigate("/member-area");
+            return;
+          }
+        }
+        
+        // If we got here, the user data is inconsistent
+        console.log("Inconsistent user data, clearing login");
+        localStorage.removeItem("user_username");
+        localStorage.removeItem("user_data");
+      }
+    } catch (error) {
+      console.error("Error checking login state:", error);
+      localStorage.removeItem("user_username");
+      localStorage.removeItem("user_data");
     }
   }, [navigate]);
   
