@@ -18,8 +18,6 @@ export const useAuthCheck = () => {
       // Make sure we have both isLoggedIn flag and activeUser
       if (!isLoggedIn || !activeUser) {
         console.log("Auth check failed: User not properly logged in");
-        localStorage.removeItem("isLoggedIn");
-        localStorage.removeItem("activeUser");
         navigate("/login");
         return;
       }
@@ -28,7 +26,7 @@ export const useAuthCheck = () => {
       let allUsers = null;
       try {
         const usersStr = localStorage.getItem("allUsers");
-        if (usersStr && usersStr !== "undefined") {
+        if (usersStr && usersStr !== "undefined" && usersStr !== "null") {
           allUsers = JSON.parse(usersStr);
           console.log("Auth check - available users:", Object.keys(allUsers));
         } else {
@@ -49,8 +47,6 @@ export const useAuthCheck = () => {
       // Verify that the active user exists in our storage
       if (!allUsers || !allUsers[activeUser]) {
         console.log("Auth check failed: Active user data not found");
-        localStorage.removeItem("isLoggedIn");
-        localStorage.removeItem("activeUser");
         navigate("/login");
       } else {
         console.log("Auth check passed for user:", activeUser);

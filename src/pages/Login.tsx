@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,22 +42,21 @@ const Login = () => {
     try {
       console.log("Login attempt for user:", values.username);
       
-      // Clear and initialize localStorage if it's corrupted
+      // Get users from localStorage
       let allUsers = {};
       try {
         const usersStr = localStorage.getItem("allUsers");
         console.log("Retrieved users string:", usersStr);
         
-        if (usersStr) {
+        if (usersStr && usersStr !== "undefined" && usersStr !== "null") {
           allUsers = JSON.parse(usersStr);
           console.log("Parsed users object:", Object.keys(allUsers));
         } else {
           console.log("No users found in localStorage");
         }
       } catch (e) {
-        console.error("Error parsing users, resetting:", e);
-        localStorage.setItem("allUsers", JSON.stringify({}));
-        allUsers = {};
+        console.error("Error parsing users:", e);
+        // Don't reset localStorage here, just handle the error
       }
       
       // Check if the user exists

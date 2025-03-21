@@ -84,7 +84,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
     try {
       console.log("Attempting to register user:", values.username);
       
-      // Get all users from localStorage or initialize empty object
+      // Initialize users object with better error handling
       let allUsers = {};
       try {
         const storedUsers = localStorage.getItem("allUsers");
@@ -135,7 +135,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
       // Add the new user to the allUsers object
       allUsers[values.username] = userObject;
       
-      // Save all users to localStorage
+      // Save all users to localStorage with explicit conversion to JSON
       console.log("Saving users to localStorage:", Object.keys(allUsers));
       localStorage.setItem("allUsers", JSON.stringify(allUsers));
       
