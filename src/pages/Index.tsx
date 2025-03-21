@@ -129,6 +129,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
         email: values.email,
         password: values.password,
         createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
         isPremium: false
       };
       

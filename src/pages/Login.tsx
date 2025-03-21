@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -26,6 +27,30 @@ const loginSchema = z.object({
 const Login = () => {
   const navigate = useNavigate();
   const [loginError, setLoginError] = useState<string | null>(null);
+  
+  // Check if user is already logged in
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const activeUser = localStorage.getItem("activeUser");
+    
+    console.log("Login page initial check - isLoggedIn:", isLoggedIn, "activeUser:", activeUser);
+    
+    if (isLoggedIn && activeUser) {
+      // Verify the user exists in allUsers
+      try {
+        const usersStr = localStorage.getItem("allUsers");
+        if (usersStr && usersStr !== "undefined" && usersStr !== "null") {
+          const allUsers = JSON.parse(usersStr);
+          if (allUsers && allUsers[activeUser]) {
+            console.log("User already logged in, redirecting to member area");
+            navigate("/member-area");
+          }
+        }
+      } catch (error) {
+        console.error("Error checking existing login:", error);
+      }
+    }
+  }, [navigate]);
   
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -75,6 +100,11 @@ const Login = () => {
         // Set active user in localStorage
         localStorage.setItem("activeUser", values.username);
         localStorage.setItem("isLoggedIn", "true");
+        
+        // Also update user object in localStorage with a lastLogin timestamp
+        userData.lastLogin = new Date().toISOString();
+        allUsers[values.username] = userData;
+        localStorage.setItem("allUsers", JSON.stringify(allUsers));
         
         console.log(`User ${values.username} logged in successfully`);
         toast.success("Login successful!");

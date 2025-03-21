@@ -1,9 +1,9 @@
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const useAuthCheck = () => {
   const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   useEffect(() => {
     try {
@@ -31,15 +31,11 @@ export const useAuthCheck = () => {
           console.log("Auth check - available users:", Object.keys(allUsers));
         } else {
           console.error("No users found in localStorage or invalid data");
-          localStorage.removeItem("isLoggedIn");
-          localStorage.removeItem("activeUser");
           navigate("/login");
           return;
         }
       } catch (e) {
         console.error("Error parsing user data:", e);
-        localStorage.removeItem("isLoggedIn");
-        localStorage.removeItem("activeUser");
         navigate("/login");
         return;
       }
@@ -50,6 +46,15 @@ export const useAuthCheck = () => {
         navigate("/login");
       } else {
         console.log("Auth check passed for user:", activeUser);
+        setIsAuthenticated(true);
+        
+        // Update last activity timestamp to keep track of session
+        try {
+          allUsers[activeUser].lastActivity = new Date().toISOString();
+          localStorage.setItem("allUsers", JSON.stringify(allUsers));
+        } catch (error) {
+          console.error("Error updating last activity:", error);
+        }
       }
     } catch (error) {
       console.error("Auth check error:", error);
@@ -57,5 +62,5 @@ export const useAuthCheck = () => {
     }
   }, [navigate]);
   
-  return null;
+  return isAuthenticated;
 };

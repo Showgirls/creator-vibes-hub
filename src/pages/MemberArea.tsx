@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,7 +11,7 @@ import SolanaPayment from "@/components/SolanaPayment";
 
 const MemberArea = () => {
   // Add authentication check
-  useAuthCheck();
+  const isAuthenticated = useAuthCheck();
   
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
@@ -34,58 +35,60 @@ const MemberArea = () => {
     const activeUser = localStorage.getItem("activeUser");
     if (!activeUser) return;
     
+    console.log("Loading data for active user:", activeUser);
+    
     // Update the username state
     if (username !== activeUser) {
       setUsername(activeUser);
     }
     
-    // Check premium status from user data
-    const userData = localStorage.getItem(`user_${activeUser}`);
-    if (userData) {
-      try {
-        const user = JSON.parse(userData);
-        setIsPremium(user.isPremium === true);
-      } catch (error) {
-        console.error('Error parsing user data:', error);
+    // Get all users from localStorage
+    try {
+      const usersStr = localStorage.getItem("allUsers");
+      if (usersStr && usersStr !== "undefined" && usersStr !== "null") {
+        const allUsers = JSON.parse(usersStr);
+        if (allUsers && allUsers[activeUser]) {
+          // Check premium status
+          setIsPremium(allUsers[activeUser].isPremium === true);
+          console.log("Premium status:", allUsers[activeUser].isPremium);
+        }
       }
+    } catch (error) {
+      console.error("Error loading user data:", error);
     }
     
     // Load referral stats from localStorage
-    const storedStats = localStorage.getItem(`referralStats_${activeUser}`);
-    if (storedStats) {
-      try {
-        const parsedStats = JSON.parse(storedStats);
-        console.log(`Loaded stats for ${activeUser}:`, parsedStats);
-        setReferralStats(parsedStats);
-      } catch (error) {
-        console.error('Error parsing referral stats:', error);
+    try {
+      const referralStatsStr = localStorage.getItem("referralStats");
+      if (referralStatsStr && referralStatsStr !== "undefined" && referralStatsStr !== "null") {
+        const allStats = JSON.parse(referralStatsStr);
+        if (allStats && allStats[activeUser]) {
+          console.log(`Loaded stats for ${activeUser}:`, allStats[activeUser]);
+          setReferralStats(allStats[activeUser]);
+        } else {
+          console.log("No referral stats found for user, initializing empty stats");
+          setReferralStats({ members: 0, earnings: 0 });
+        }
       }
+    } catch (error) {
+      console.error('Error parsing referral stats:', error);
     }
   };
   
   useEffect(() => {
-    // Load initial user data and stats
-    loadReferralStats();
-    
-    // Set up storage event listener to update stats when they change
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key && event.key.startsWith('referralStats_')) {
-        console.log("Storage changed for referral stats, reloading stats");
-        loadReferralStats();
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Set up polling to check for updates every 500ms as a fallback
-    const intervalId = setInterval(loadReferralStats, 500);
-    
-    // Cleanup
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(intervalId);
-    };
-  }, []);
+    if (isAuthenticated) {
+      // Load initial user data and stats
+      loadReferralStats();
+      
+      // Set up polling to check for updates every 500ms as a fallback
+      const intervalId = setInterval(loadReferralStats, 500);
+      
+      // Cleanup
+      return () => {
+        clearInterval(intervalId);
+      };
+    }
+  }, [isAuthenticated]);
   
   const handleCopyLink = () => {
     navigator.clipboard.writeText(affiliateLink);
@@ -106,20 +109,25 @@ const MemberArea = () => {
     const activeUser = localStorage.getItem("activeUser");
     if (!activeUser) return;
     
-    const userData = localStorage.getItem(`user_${activeUser}`);
-    if (userData) {
-      try {
-        const user = JSON.parse(userData);
-        user.isPremium = true;
-        
-        // Update user data in localStorage
-        localStorage.setItem(`user_${activeUser}`, JSON.stringify(user));
-        
-        // Update UI
-        setIsPremium(true);
-      } catch (error) {
-        console.error('Error updating premium status:', error);
+    try {
+      const usersStr = localStorage.getItem("allUsers");
+      if (usersStr && usersStr !== "undefined" && usersStr !== "null") {
+        const allUsers = JSON.parse(usersStr);
+        if (allUsers && allUsers[activeUser]) {
+          // Update premium status
+          allUsers[activeUser].isPremium = true;
+          
+          // Save updated user data
+          localStorage.setItem("allUsers", JSON.stringify(allUsers));
+          
+          // Update UI
+          setIsPremium(true);
+          toast.success("Premium membership activated!");
+        }
       }
+    } catch (error) {
+      console.error('Error updating premium status:', error);
+      toast.error("Error updating membership status");
     }
   };
 
