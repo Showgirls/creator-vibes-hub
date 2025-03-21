@@ -82,17 +82,25 @@ const Index = ({ isRegister = false }: IndexProps) => {
     setRegistrationError(null);
     
     try {
+      console.log("Attempting to register user:", values.username);
+      
       // Get all users from localStorage or initialize empty object
       let allUsers = {};
       try {
         const storedUsers = localStorage.getItem("allUsers");
-        allUsers = storedUsers ? JSON.parse(storedUsers) : {};
+        console.log("Retrieved users string:", storedUsers);
+        
+        if (storedUsers && storedUsers !== "undefined" && storedUsers !== "null") {
+          allUsers = JSON.parse(storedUsers);
+          console.log("Parsed existing users:", Object.keys(allUsers));
+        } else {
+          console.log("No existing users found, creating new users object");
+          allUsers = {};
+        }
       } catch (e) {
         console.error('Error parsing stored users, resetting:', e);
         allUsers = {};
       }
-      
-      console.log("Current stored users:", Object.keys(allUsers));
       
       // Check if username already exists
       if (allUsers[values.username]) {
@@ -128,8 +136,8 @@ const Index = ({ isRegister = false }: IndexProps) => {
       allUsers[values.username] = userObject;
       
       // Save all users to localStorage
+      console.log("Saving users to localStorage:", Object.keys(allUsers));
       localStorage.setItem("allUsers", JSON.stringify(allUsers));
-      console.log("Saved user data for:", values.username);
       
       // Set active user
       localStorage.setItem("activeUser", values.username);
@@ -139,7 +147,11 @@ const Index = ({ isRegister = false }: IndexProps) => {
       let referralStatsObj = {};
       try {
         const storedStats = localStorage.getItem("referralStats");
-        referralStatsObj = storedStats ? JSON.parse(storedStats) : {};
+        if (storedStats && storedStats !== "undefined" && storedStats !== "null") {
+          referralStatsObj = JSON.parse(storedStats);
+        } else {
+          referralStatsObj = {};
+        }
       } catch (e) {
         console.error('Error parsing stored stats, resetting:', e);
         referralStatsObj = {};
@@ -149,42 +161,33 @@ const Index = ({ isRegister = false }: IndexProps) => {
         members: 0,
         earnings: 0
       };
-      localStorage.setItem("referralStats", JSON.stringify(referralStatsObj));
       
-      console.log(`New user registered: ${values.username}`);
+      console.log("Saving referral stats:", referralStatsObj);
+      localStorage.setItem("referralStats", JSON.stringify(referralStatsObj));
       
       // If the user was referred, increment referrer's stats
       if (referredBy) {
         console.log(`Processing referral completion for referrer: ${referredBy}`);
         
         try {
-          let referralStats = {};
-          try {
-            const storedStats = localStorage.getItem("referralStats");
-            referralStats = storedStats ? JSON.parse(storedStats) : {};
-          } catch (e) {
-            console.error('Error parsing referral stats, resetting:', e);
-            referralStats = {};
-          }
-          
-          if (referralStats[referredBy]) {
-            const stats = referralStats[referredBy];
+          if (referralStatsObj[referredBy]) {
+            const stats = referralStatsObj[referredBy];
             console.log(`Current stats for ${referredBy} before signup credit:`, stats);
             
             // We specifically want to increment the members count
             stats.members = Number(stats.members) + 1;
             
-            referralStats[referredBy] = stats;
-            localStorage.setItem("referralStats", JSON.stringify(referralStats));
+            referralStatsObj[referredBy] = stats;
+            localStorage.setItem("referralStats", JSON.stringify(referralStatsObj));
             console.log(`Updated stats for ${referredBy} after signup:`, stats);
           } else {
             // Initialize stats for this referrer with one member
             console.log(`No existing stats found for ${referredBy}, creating new entry`);
-            referralStats[referredBy] = {
+            referralStatsObj[referredBy] = {
               members: 1,
               earnings: 0
             };
-            localStorage.setItem("referralStats", JSON.stringify(referralStats));
+            localStorage.setItem("referralStats", JSON.stringify(referralStatsObj));
           }
         } catch (error) {
           console.error('Error updating referrer stats on signup:', error);

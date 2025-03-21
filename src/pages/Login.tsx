@@ -41,12 +41,28 @@ const Login = () => {
     setLoginError(null);
     
     try {
-      // Get all users from localStorage
-      const allUsers = JSON.parse(localStorage.getItem("allUsers") || "{}");
-      console.log("Available users:", Object.keys(allUsers));
+      console.log("Login attempt for user:", values.username);
+      
+      // Clear and initialize localStorage if it's corrupted
+      let allUsers = {};
+      try {
+        const usersStr = localStorage.getItem("allUsers");
+        console.log("Retrieved users string:", usersStr);
+        
+        if (usersStr) {
+          allUsers = JSON.parse(usersStr);
+          console.log("Parsed users object:", Object.keys(allUsers));
+        } else {
+          console.log("No users found in localStorage");
+        }
+      } catch (e) {
+        console.error("Error parsing users, resetting:", e);
+        localStorage.setItem("allUsers", JSON.stringify({}));
+        allUsers = {};
+      }
       
       // Check if the user exists
-      if (!allUsers[values.username]) {
+      if (!allUsers || !allUsers[values.username]) {
         console.log(`Login failed: User ${values.username} not found`);
         setLoginError("Invalid username or password");
         toast.error("Invalid username or password");
@@ -55,6 +71,7 @@ const Login = () => {
       
       // Verify the password
       const userData = allUsers[values.username];
+      console.log(`Checking password for ${values.username}`);
       
       if (userData.password === values.password) {
         // Set active user in localStorage
