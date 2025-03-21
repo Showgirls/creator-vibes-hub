@@ -43,6 +43,7 @@ interface IndexProps {
 const Index = ({ isRegister = false }: IndexProps) => {
   const navigate = useNavigate();
   const [referredBy, setReferredBy] = useState<string | null>(null);
+  const [registrationError, setRegistrationError] = useState<string | null>(null);
 
   // Get referral information from localStorage on component mount
   useEffect(() => {
@@ -66,9 +67,55 @@ const Index = ({ isRegister = false }: IndexProps) => {
   });
 
   const onSignupSubmit = (values: z.infer<typeof signupSchema>) => {
-    // Save the user's information to localStorage
-    localStorage.setItem("username", values.username);
-    localStorage.setItem("email", values.email);
+    // Reset any previous error
+    setRegistrationError(null);
+    
+    // Check if username or email already exists
+    const usernameExists = localStorage.getItem(`user_${values.username}`);
+    
+    // Check if email is already used
+    let emailExists = false;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('user_')) {
+        try {
+          const userData = JSON.parse(localStorage.getItem(key) || '{}');
+          if (userData.email === values.email) {
+            emailExists = true;
+            break;
+          }
+        } catch (e) {
+          console.error('Error parsing user data:', e);
+        }
+      }
+    }
+    
+    if (usernameExists) {
+      setRegistrationError("Username already exists");
+      toast.error("Username already exists");
+      return;
+    }
+    
+    if (emailExists) {
+      setRegistrationError("Email already in use");
+      toast.error("Email already in use");
+      return;
+    }
+    
+    // Create user object with credentials
+    const userObject = {
+      username: values.username,
+      email: values.email,
+      password: values.password,
+      createdAt: new Date().toISOString(),
+      isPremium: false
+    };
+    
+    // Save user data with username as key for easier lookup
+    localStorage.setItem(`user_${values.username}`, JSON.stringify(userObject));
+    
+    // Set active user
+    localStorage.setItem("activeUser", values.username);
     localStorage.setItem("isLoggedIn", "true");
     
     // Initialize referral stats for this user
@@ -96,18 +143,25 @@ const Index = ({ isRegister = false }: IndexProps) => {
           console.log(`Updated stats for ${referredBy} after signup:`, stats);
           
           // Dispatch storage event to notify other tabs/windows
-          window.dispatchEvent(new Event('storage'));
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: `referralStats_${referredBy}`,
+            newValue: JSON.stringify(stats)
+          }));
         } else {
           // Initialize stats for this referrer with one member
           console.log(`No existing stats found for ${referredBy}, creating new entry`);
-          localStorage.setItem(`referralStats_${referredBy}`, JSON.stringify({
+          const newStats = {
             members: 1,
             models: 0,
             earnings: 0
-          }));
+          };
+          localStorage.setItem(`referralStats_${referredBy}`, JSON.stringify(newStats));
           
           // Dispatch storage event to notify other tabs/windows
-          window.dispatchEvent(new Event('storage'));
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: `referralStats_${referredBy}`,
+            newValue: JSON.stringify(newStats)
+          }));
         }
       } catch (error) {
         console.error('Error updating referrer stats on signup:', error);
@@ -132,6 +186,13 @@ const Index = ({ isRegister = false }: IndexProps) => {
               <p className="text-sm text-white">You were referred by: <span className="font-semibold">{referredBy}</span></p>
             </div>
           )}
+          
+          {registrationError && (
+            <div className="bg-red-500/10 p-3 rounded-md border border-red-500/30 mb-4">
+              <p className="text-sm text-white">{registrationError}</p>
+            </div>
+          )}
+          
           <div className="text-right mb-4">
             <Link to="/login">
               <Button variant="outline" className="border-[#f9166f] text-white hover:bg-[#f9166f]/10">

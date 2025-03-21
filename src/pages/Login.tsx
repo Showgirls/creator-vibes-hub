@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
+import { Link } from "react-router-dom";
 
 // Login form schema
 const loginSchema = z.object({
@@ -25,6 +26,7 @@ const loginSchema = z.object({
 
 const Login = () => {
   const navigate = useNavigate();
+  const [loginError, setLoginError] = useState<string | null>(null);
   
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -35,11 +37,40 @@ const Login = () => {
   });
 
   const onSubmit = (values: z.infer<typeof loginSchema>) => {
-    // In a real application, this would validate credentials against a backend
-    // For demo purposes, we'll just simulate a successful login
-    localStorage.setItem("isLoggedIn", "true");
-    toast.success("Login successful!");
-    navigate("/member-area");
+    // Reset any previous error
+    setLoginError(null);
+    
+    // Get all users from localStorage
+    const allUsers = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('user_')) {
+        try {
+          const userData = JSON.parse(localStorage.getItem(key) || '{}');
+          allUsers.push(userData);
+        } catch (e) {
+          console.error('Error parsing user data:', e);
+        }
+      }
+    }
+    
+    // Find user with matching email and password
+    const user = allUsers.find(user => 
+      user.email === values.email && user.password === values.password
+    );
+    
+    if (user) {
+      // Set active user in localStorage
+      localStorage.setItem("activeUser", user.username);
+      localStorage.setItem("isLoggedIn", "true");
+      
+      console.log(`User ${user.username} logged in successfully`);
+      toast.success("Login successful!");
+      navigate("/member-area");
+    } else {
+      setLoginError("Invalid email or password");
+      toast.error("Invalid email or password");
+    }
   };
 
   return (
@@ -47,7 +78,7 @@ const Login = () => {
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         <img 
           src="/lovable-uploads/ed9037d0-d55e-4bd5-b525-febf2587d57b.png" 
-          alt="FkiTT Logo" 
+          alt="Creator Space Logo" 
           className="h-24 mb-8"
         />
         <div className="w-full max-w-md space-y-8 glass-card p-8 rounded-lg">
@@ -55,6 +86,12 @@ const Login = () => {
             <h1 className="text-2xl font-bold">Member Login</h1>
             <p className="text-muted-foreground mt-2">Log in to access your member area</p>
           </div>
+          
+          {loginError && (
+            <div className="bg-red-500/10 p-3 rounded-md border border-red-500/30 mb-4">
+              <p className="text-sm text-white">{loginError}</p>
+            </div>
+          )}
           
           <Form {...form}>
             <form
@@ -96,13 +133,14 @@ const Login = () => {
           <div className="text-center mt-4">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{" "}
-              <Button
-                variant="link"
-                className="text-primary p-0"
-                onClick={() => navigate("/register")}
-              >
-                Sign up
-              </Button>
+              <Link to="/register">
+                <Button
+                  variant="link"
+                  className="text-primary p-0"
+                >
+                  Sign up
+                </Button>
+              </Link>
             </p>
           </div>
         </div>

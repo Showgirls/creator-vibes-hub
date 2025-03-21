@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,20 +30,32 @@ const MemberArea = () => {
   
   // Function to load the latest stats from localStorage
   const loadReferralStats = () => {
-    const storedUsername = localStorage.getItem("username");
-    if (!storedUsername) return;
+    // Get the active user
+    const activeUser = localStorage.getItem("activeUser");
+    if (!activeUser) return;
     
-    // Update the username state if needed
-    if (username !== storedUsername) {
-      setUsername(storedUsername);
+    // Update the username state
+    if (username !== activeUser) {
+      setUsername(activeUser);
+    }
+    
+    // Check premium status from user data
+    const userData = localStorage.getItem(`user_${activeUser}`);
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        setIsPremium(user.isPremium === true);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
     }
     
     // Load referral stats from localStorage
-    const storedStats = localStorage.getItem(`referralStats_${storedUsername}`);
+    const storedStats = localStorage.getItem(`referralStats_${activeUser}`);
     if (storedStats) {
       try {
         const parsedStats = JSON.parse(storedStats);
-        console.log(`Loaded stats for ${storedUsername}:`, parsedStats);
+        console.log(`Loaded stats for ${activeUser}:`, parsedStats);
         setReferralStats(parsedStats);
       } catch (error) {
         console.error('Error parsing referral stats:', error);
@@ -53,17 +64,15 @@ const MemberArea = () => {
   };
   
   useEffect(() => {
-    // Check if user is a premium member
-    const premiumStatus = localStorage.getItem("isPremiumMember") === "true";
-    setIsPremium(premiumStatus);
-    
-    // Get user data and initial stats
+    // Load initial user data and stats
     loadReferralStats();
     
     // Set up storage event listener to update stats when they change
-    const handleStorageChange = () => {
-      console.log("Storage changed, reloading stats");
-      loadReferralStats();
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key && event.key.startsWith('referralStats_')) {
+        console.log("Storage changed for referral stats, reloading stats");
+        loadReferralStats();
+      }
     };
     
     window.addEventListener('storage', handleStorageChange);
@@ -87,13 +96,31 @@ const MemberArea = () => {
   
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("activeUser");
     toast.success("Logged out successfully");
     navigate("/login");
   };
   
   const handlePaymentSuccess = () => {
-    setIsPremium(true);
-    localStorage.setItem("isPremiumMember", "true");
+    // Get the current user data
+    const activeUser = localStorage.getItem("activeUser");
+    if (!activeUser) return;
+    
+    const userData = localStorage.getItem(`user_${activeUser}`);
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        user.isPremium = true;
+        
+        // Update user data in localStorage
+        localStorage.setItem(`user_${activeUser}`, JSON.stringify(user));
+        
+        // Update UI
+        setIsPremium(true);
+      } catch (error) {
+        console.error('Error updating premium status:', error);
+      }
+    }
   };
 
   return (
