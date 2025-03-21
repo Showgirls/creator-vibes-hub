@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,7 +19,6 @@ const MemberArea = () => {
   const [username, setUsername] = useState("user123");
   const [referralStats, setReferralStats] = useState({
     members: 0,
-    models: 0,
     earnings: 0
   });
   
@@ -214,14 +214,10 @@ const MemberArea = () => {
                 </div>
                 <div className="p-4 bg-sidebar rounded-md">
                   <h3 className="text-lg font-semibold mb-2 text-foreground">Your Stats</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-muted p-4 rounded-md">
                       <p className="text-muted-foreground text-sm">Referred Members</p>
                       <p className="text-2xl font-bold text-foreground">{referralStats.members}</p>
-                    </div>
-                    <div className="bg-muted p-4 rounded-md">
-                      <p className="text-muted-foreground text-sm">Referred Models</p>
-                      <p className="text-2xl font-bold text-foreground">{referralStats.models}</p>
                     </div>
                     <div className="bg-muted p-4 rounded-md">
                       <p className="text-muted-foreground text-sm">Total Earnings</p>
