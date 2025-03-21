@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
@@ -41,95 +42,16 @@ interface IndexProps {
 
 const Index = ({ isRegister = false }: IndexProps) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [referredBy, setReferredBy] = useState<string | null>(null);
-  const [hasRecordedVisit, setHasRecordedVisit] = useState(false);
 
-  // Get referral information from URL or localStorage on component mount
+  // Get referral information from localStorage on component mount
   useEffect(() => {
-    try {
-      // First check URL for referral code
-      const params = new URLSearchParams(location.search);
-      const refCode = params.get('ref');
-      
-      if (refCode) {
-        // Save the referral code to localStorage
-        localStorage.setItem('referredBy', refCode);
-        setReferredBy(refCode);
-        console.log('User was referred by:', refCode);
-        
-        if (!hasRecordedVisit) {
-          // Update referrer stats immediately when a user visits with their referral link
-          updateReferrerStats(refCode, 'visit');
-          setHasRecordedVisit(true);
-        }
-      } else {
-        // Check localStorage if no URL param
-        const storedRefCode = localStorage.getItem('referredBy');
-        if (storedRefCode) {
-          setReferredBy(storedRefCode);
-          console.log('User was referred by (from storage):', storedRefCode);
-        }
-      }
-    } catch (error) {
-      console.error('Error processing referral:', error);
+    const referralCode = localStorage.getItem('referredBy');
+    if (referralCode) {
+      setReferredBy(referralCode);
+      console.log('User was referred by:', referralCode);
     }
-  }, [location, hasRecordedVisit]);
-
-  // Function to update referrer stats when someone uses their referral link
-  const updateReferrerStats = (referrer: string, action: 'visit' | 'signup') => {
-    try {
-      console.log(`Updating stats for referrer: ${referrer}, Action: ${action}`);
-      
-      // Get current stats or initialize with default values
-      let currentStats = {
-        members: 0,
-        earnings: 0
-      };
-      
-      const referrerStatsString = localStorage.getItem(`referralStats_${referrer}`);
-      if (referrerStatsString) {
-        try {
-          const parsedStats = JSON.parse(referrerStatsString);
-          currentStats = {
-            members: Number(parsedStats.members || 0),
-            earnings: Number(parsedStats.earnings || 0)
-          };
-        } catch (e) {
-          console.error('Error parsing referrer stats:', e);
-        }
-      }
-      
-      console.log(`Previous stats for ${referrer}:`, currentStats);
-      
-      // Update stats
-      const updatedStats = {
-        members: currentStats.members + 1,
-        earnings: currentStats.earnings + 1.00
-      };
-      
-      console.log(`Updated stats for ${referrer}:`, updatedStats);
-      
-      // Save updated stats back to localStorage
-      localStorage.setItem(`referralStats_${referrer}`, JSON.stringify(updatedStats));
-      
-      // Dispatch a custom event to notify other components of the update
-      window.dispatchEvent(new CustomEvent('referralStatsUpdated', { 
-        detail: { referrer, stats: updatedStats }
-      }));
-      
-      // Also dispatch a storage event for cross-tab updates
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: `referralStats_${referrer}`,
-        newValue: JSON.stringify(updatedStats),
-        storageArea: localStorage
-      }));
-      
-      console.log(`Successfully updated stats for referrer ${referrer} for ${action}`);
-    } catch (error) {
-      console.error('Error updating referrer stats:', error);
-    }
-  };
+  }, []);
 
   const signupForm = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
@@ -144,31 +66,34 @@ const Index = ({ isRegister = false }: IndexProps) => {
   });
 
   const onSignupSubmit = (values: z.infer<typeof signupSchema>) => {
-    try {
-      // Save the user's information to localStorage
-      localStorage.setItem("username", values.username);
-      localStorage.setItem("email", values.email);
-      localStorage.setItem("isLoggedIn", "true");
-      
-      // Initialize referral stats for this user
-      const initialStats = {
-        members: 0,
-        earnings: 0
-      };
-      localStorage.setItem(`referralStats_${values.username}`, JSON.stringify(initialStats));
-      
-      // If the user was referred, update the referrer's stats again on signup
-      if (referredBy) {
-        console.log("Updating referrer stats on signup completion for:", referredBy);
-        updateReferrerStats(referredBy, 'signup');
+    // Save the user's information to localStorage
+    localStorage.setItem("username", values.username);
+    localStorage.setItem("email", values.email);
+    localStorage.setItem("isLoggedIn", "true");
+    
+    // Initialize referral stats for this user
+    const initialStats = {
+      members: 0,
+      models: 0,
+      earnings: 0
+    };
+    localStorage.setItem(`referralStats_${values.username}`, JSON.stringify(initialStats));
+    
+    // If the user was referred, update the referrer's earnings
+    if (referredBy) {
+      const referrerStats = localStorage.getItem(`referralStats_${referredBy}`);
+      if (referrerStats) {
+        const stats = JSON.parse(referrerStats);
+        stats.earnings += 1.00; // Add $1 for the signup (simulated earnings)
+        localStorage.setItem(`referralStats_${referredBy}`, JSON.stringify(stats));
       }
       
-      toast.success("Account created successfully!");
-      navigate("/member-area");
-    } catch (error) {
-      console.error('Error during signup:', error);
-      toast.error("Something went wrong during signup. Please try again.");
+      // In a real implementation, you would call your backend API here
+      console.log(`Updated stats for referrer: ${referredBy}`);
     }
+    
+    toast.success("Account created successfully!");
+    navigate("/member-area");
   };
 
   return (
