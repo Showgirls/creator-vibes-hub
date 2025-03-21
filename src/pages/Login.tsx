@@ -40,17 +40,18 @@ const Login = () => {
     // Reset any previous error
     setLoginError(null);
     
-    // Directly check for the username in localStorage
-    const userKey = `user_${values.username}`;
-    const userDataStr = localStorage.getItem(userKey);
-    
-    if (!userDataStr) {
-      setLoginError("Invalid username or password");
-      toast.error("Invalid username or password");
-      return;
-    }
-    
     try {
+      // Directly check for the username in localStorage
+      const userKey = `user_${values.username}`;
+      const userDataStr = localStorage.getItem(userKey);
+      
+      if (!userDataStr) {
+        console.log(`Login failed: User ${values.username} not found`);
+        setLoginError("Invalid username or password");
+        toast.error("Invalid username or password");
+        return;
+      }
+      
       // Parse the stored user data
       const userData = JSON.parse(userDataStr);
       
@@ -64,11 +65,12 @@ const Login = () => {
         toast.success("Login successful!");
         navigate("/member-area");
       } else {
+        console.log(`Login failed: Incorrect password for ${values.username}`);
         setLoginError("Invalid username or password");
         toast.error("Invalid username or password");
       }
     } catch (e) {
-      console.error('Error parsing user data:', e);
+      console.error('Error during login process:', e);
       setLoginError("An error occurred during login");
       toast.error("An error occurred during login");
     }

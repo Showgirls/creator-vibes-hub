@@ -111,65 +111,71 @@ const Index = ({ isRegister = false }: IndexProps) => {
       isPremium: false
     };
     
-    // Save user data with username as key for easier lookup
-    localStorage.setItem(`user_${values.username}`, JSON.stringify(userObject));
-    
-    // Set active user
-    localStorage.setItem("activeUser", values.username);
-    localStorage.setItem("isLoggedIn", "true");
-    
-    // Initialize referral stats for this user
-    const initialStats = {
-      members: 0,
-      models: 0,
-      earnings: 0
-    };
-    localStorage.setItem(`referralStats_${values.username}`, JSON.stringify(initialStats));
-    
-    // If the user was referred, increment referrer's stats
-    if (referredBy) {
-      console.log(`Processing referral completion for referrer: ${referredBy}`);
+    try {
+      // Save user data with username as key for easier lookup
+      localStorage.setItem(`user_${values.username}`, JSON.stringify(userObject));
       
-      try {
-        const referrerStats = localStorage.getItem(`referralStats_${referredBy}`);
-        if (referrerStats) {
-          const stats = JSON.parse(referrerStats);
-          console.log(`Current stats for ${referredBy} before signup credit:`, stats);
-          
-          // We specifically want to increment the members count
-          stats.members = Number(stats.members) + 1;
-          
-          localStorage.setItem(`referralStats_${referredBy}`, JSON.stringify(stats));
-          console.log(`Updated stats for ${referredBy} after signup:`, stats);
-          
-          // Dispatch storage event to notify other tabs/windows
-          window.dispatchEvent(new StorageEvent('storage', {
-            key: `referralStats_${referredBy}`,
-            newValue: JSON.stringify(stats)
-          }));
-        } else {
-          // Initialize stats for this referrer with one member
-          console.log(`No existing stats found for ${referredBy}, creating new entry`);
-          const newStats = {
-            members: 1,
-            models: 0,
-            earnings: 0
-          };
-          localStorage.setItem(`referralStats_${referredBy}`, JSON.stringify(newStats));
-          
-          // Dispatch storage event to notify other tabs/windows
-          window.dispatchEvent(new StorageEvent('storage', {
-            key: `referralStats_${referredBy}`,
-            newValue: JSON.stringify(newStats)
-          }));
+      // Set active user
+      localStorage.setItem("activeUser", values.username);
+      localStorage.setItem("isLoggedIn", "true");
+      
+      // Initialize referral stats for this user
+      const initialStats = {
+        members: 0,
+        earnings: 0
+      };
+      localStorage.setItem(`referralStats_${values.username}`, JSON.stringify(initialStats));
+      
+      console.log(`New user registered: ${values.username}`);
+      
+      // If the user was referred, increment referrer's stats
+      if (referredBy) {
+        console.log(`Processing referral completion for referrer: ${referredBy}`);
+        
+        try {
+          const referrerStats = localStorage.getItem(`referralStats_${referredBy}`);
+          if (referrerStats) {
+            const stats = JSON.parse(referrerStats);
+            console.log(`Current stats for ${referredBy} before signup credit:`, stats);
+            
+            // We specifically want to increment the members count
+            stats.members = Number(stats.members) + 1;
+            
+            localStorage.setItem(`referralStats_${referredBy}`, JSON.stringify(stats));
+            console.log(`Updated stats for ${referredBy} after signup:`, stats);
+            
+            // Dispatch storage event to notify other tabs/windows
+            window.dispatchEvent(new StorageEvent('storage', {
+              key: `referralStats_${referredBy}`,
+              newValue: JSON.stringify(stats)
+            }));
+          } else {
+            // Initialize stats for this referrer with one member
+            console.log(`No existing stats found for ${referredBy}, creating new entry`);
+            const newStats = {
+              members: 1,
+              earnings: 0
+            };
+            localStorage.setItem(`referralStats_${referredBy}`, JSON.stringify(newStats));
+            
+            // Dispatch storage event to notify other tabs/windows
+            window.dispatchEvent(new StorageEvent('storage', {
+              key: `referralStats_${referredBy}`,
+              newValue: JSON.stringify(newStats)
+            }));
+          }
+        } catch (error) {
+          console.error('Error updating referrer stats on signup:', error);
         }
-      } catch (error) {
-        console.error('Error updating referrer stats on signup:', error);
       }
+      
+      toast.success("Account created successfully!");
+      navigate("/member-area");
+    } catch (e) {
+      console.error('Error saving user data:', e);
+      setRegistrationError("An error occurred during registration");
+      toast.error("An error occurred during registration");
     }
-    
-    toast.success("Account created successfully!");
-    navigate("/member-area");
   };
 
   return (
