@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,46 +46,64 @@ const Index = ({ isRegister = false }: IndexProps) => {
 
   // Get referral information from URL or localStorage on component mount
   useEffect(() => {
-    // First check URL for referral code
-    const params = new URLSearchParams(location.search);
-    const refCode = params.get('ref');
-    
-    if (refCode) {
-      // Save the referral code to localStorage
-      localStorage.setItem('referredBy', refCode);
-      setReferredBy(refCode);
-      console.log('User was referred by:', refCode);
+    try {
+      // First check URL for referral code
+      const params = new URLSearchParams(location.search);
+      const refCode = params.get('ref');
       
-      // Immediately update the referrer's stats when someone visits with their referral link
-      updateReferrerStats(refCode);
-    } else {
-      // Check localStorage if no URL param
-      const storedRefCode = localStorage.getItem('referredBy');
-      if (storedRefCode) {
-        setReferredBy(storedRefCode);
-        console.log('User was referred by (from storage):', storedRefCode);
+      if (refCode) {
+        // Save the referral code to localStorage
+        localStorage.setItem('referredBy', refCode);
+        setReferredBy(refCode);
+        console.log('User was referred by:', refCode);
+        
+        // Immediately update the referrer's stats when someone visits with their referral link
+        // Make sure to update it only once per session
+        const alreadyUpdated = sessionStorage.getItem(`referred_by_${refCode}`);
+        if (!alreadyUpdated) {
+          updateReferrerStats(refCode);
+          sessionStorage.setItem(`referred_by_${refCode}`, 'true');
+        }
+      } else {
+        // Check localStorage if no URL param
+        const storedRefCode = localStorage.getItem('referredBy');
+        if (storedRefCode) {
+          setReferredBy(storedRefCode);
+          console.log('User was referred by (from storage):', storedRefCode);
+        }
       }
+    } catch (error) {
+      console.error('Error processing referral:', error);
     }
   }, [location]);
 
   // Function to update referrer stats when someone uses their referral link
   const updateReferrerStats = (referrer: string) => {
-    const referrerStats = localStorage.getItem(`referralStats_${referrer}`);
-    if (referrerStats) {
-      const stats = JSON.parse(referrerStats);
-      stats.members += 1; // Increment referred members count
-      stats.earnings += 1.00; // Add $1 for the referral
-      localStorage.setItem(`referralStats_${referrer}`, JSON.stringify(stats));
+    try {
+      console.log('Updating stats for referrer:', referrer);
       
-      console.log(`Updated stats for referrer ${referrer}: +1 member, +$1.00 earnings`);
-    } else {
-      // If referrer has no stats yet, create initial stats
-      const initialStats = {
+      let stats = {
         members: 1,
         earnings: 1.00
       };
-      localStorage.setItem(`referralStats_${referrer}`, JSON.stringify(initialStats));
-      console.log(`Created stats for referrer ${referrer}: 1 member, $1.00 earnings`);
+      
+      const referrerStats = localStorage.getItem(`referralStats_${referrer}`);
+      if (referrerStats) {
+        try {
+          const parsedStats = JSON.parse(referrerStats);
+          stats = {
+            members: (parsedStats.members || 0) + 1,
+            earnings: (parsedStats.earnings || 0) + 1.00
+          };
+        } catch (e) {
+          console.error('Error parsing referrer stats:', e);
+        }
+      }
+      
+      localStorage.setItem(`referralStats_${referrer}`, JSON.stringify(stats));
+      console.log(`Updated stats for referrer ${referrer}:`, stats);
+    } catch (error) {
+      console.error('Error updating referrer stats:', error);
     }
   };
 
@@ -103,26 +120,36 @@ const Index = ({ isRegister = false }: IndexProps) => {
   });
 
   const onSignupSubmit = (values: z.infer<typeof signupSchema>) => {
-    // Save the user's information to localStorage
-    localStorage.setItem("username", values.username);
-    localStorage.setItem("email", values.email);
-    localStorage.setItem("isLoggedIn", "true");
-    
-    // Initialize referral stats for this user
-    const initialStats = {
-      members: 0,
-      earnings: 0
-    };
-    localStorage.setItem(`referralStats_${values.username}`, JSON.stringify(initialStats));
-    
-    // If the user was referred, update the referrer's stats again on signup
-    // This ensures both visit and signup are counted
-    if (referredBy) {
-      updateReferrerStats(referredBy);
+    try {
+      // Save the user's information to localStorage
+      localStorage.setItem("username", values.username);
+      localStorage.setItem("email", values.email);
+      localStorage.setItem("isLoggedIn", "true");
+      
+      // Initialize referral stats for this user
+      const initialStats = {
+        members: 0,
+        earnings: 0
+      };
+      localStorage.setItem(`referralStats_${values.username}`, JSON.stringify(initialStats));
+      
+      // If the user was referred, update the referrer's stats again on signup
+      // This ensures both visit and signup are counted
+      if (referredBy) {
+        // Use a different key for signup vs. visit
+        const alreadyUpdatedOnSignup = sessionStorage.getItem(`referred_by_${referredBy}_signup`);
+        if (!alreadyUpdatedOnSignup) {
+          updateReferrerStats(referredBy);
+          sessionStorage.setItem(`referred_by_${referredBy}_signup`, 'true');
+        }
+      }
+      
+      toast.success("Account created successfully!");
+      navigate("/member-area");
+    } catch (error) {
+      console.error('Error during signup:', error);
+      toast.error("Something went wrong during signup. Please try again.");
     }
-    
-    toast.success("Account created successfully!");
-    navigate("/member-area");
   };
 
   return (
