@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import Token from "./pages/Token";
 import Login from "./pages/Login";
 import MemberArea from "./pages/MemberArea";
+import Models from "./pages/Models";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +28,7 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/token" element={<Token />} />
           <Route path="/member-area" element={<MemberArea />} />
+          <Route path="/models" element={<Models />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
