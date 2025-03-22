@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -282,7 +281,7 @@ const MemberArea = () => {
                 Use the button below to sign up as a model/creator so you can get started as soon as we go live on April 28th. All models that sign up before April 28th get an additional 3.5% of the total revenue share!
               </p>
               <p className="text-foreground mb-6">
-                To learn more about becoming a model/creator and to learn the benefits <a href="https://fkitt.com/models" target="_blank" rel="noopener noreferrer" className="text-[#f9166f] hover:underline">CLICK HERE</a>
+                To learn more about becoming a model/creator and to learn the benefits <Link to="/models" className="text-[#f9166f] hover:underline">CLICK HERE</Link>
               </p>
               <div className="flex justify-start">
                 <a href="https://fkitt.com/model-signup" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
