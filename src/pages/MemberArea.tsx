@@ -206,7 +206,7 @@ const MemberArea = () => {
                   Buy Lifetime Membership
                 </h2>
                 <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mb-4">
-                  <span className="text-xl font-bold text-[#f9166f]">Limited time only $20</span>
+                  <span className="text-xl font-bold text-[#f9166f]">Limited time only $20 worth of $FKITT Tokens</span>
                   <span className="text-muted-foreground italic">[Normal price: $28 per month or $280 per year]</span>
                 </div>
                 <p className="text-muted-foreground mb-6">
