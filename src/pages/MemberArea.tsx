@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -214,6 +215,9 @@ const MemberArea = () => {
                   <Link to="/token" className="text-[#D6BCFA] ml-1 hover:underline">
                     Learn more
                   </Link>
+                </p>
+                <p className="italic text-muted-foreground mb-6">
+                  <strong>Offer is limited to the first 5000 holders of $FkiTT Token (MUST HOLD UNTIL LAUNCH TO BE ELIGIBLE).</strong>
                 </p>
                 <div className="flex justify-start">
                   <SolanaPayment 
