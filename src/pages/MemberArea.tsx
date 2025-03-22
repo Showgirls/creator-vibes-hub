@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,7 +10,7 @@ import SolanaPayment from "@/components/SolanaPayment";
 
 const MemberArea = () => {
   // Add authentication check
-  const isAuthenticated = useAuthCheck();
+  const { isAuthenticated, isChecking } = useAuthCheck();
   
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
@@ -51,9 +50,17 @@ const MemberArea = () => {
     setIsPremium(currentUser.isPremium === true);
     console.log("Premium status:", currentUser.isPremium);
     
-    // Load referral stats from localStorage
+    // Load referral stats from both storages
     try {
-      const referralStatsStr = localStorage.getItem("referral_stats");
+      let referralStatsStr = sessionStorage.getItem("referral_stats");
+      if (!referralStatsStr) {
+        referralStatsStr = localStorage.getItem("referral_stats");
+        // Sync to sessionStorage if found in localStorage
+        if (referralStatsStr) {
+          sessionStorage.setItem("referral_stats", referralStatsStr);
+        }
+      }
+      
       if (referralStatsStr && referralStatsStr !== "undefined" && referralStatsStr !== "null") {
         const allStats = JSON.parse(referralStatsStr);
         if (allStats && allStats[currentUsername]) {
@@ -65,14 +72,18 @@ const MemberArea = () => {
           
           // Initialize stats for this user
           allStats[currentUsername] = { members: 0, earnings: 0 };
-          localStorage.setItem("referral_stats", JSON.stringify(allStats));
+          const newStatsStr = JSON.stringify(allStats);
+          localStorage.setItem("referral_stats", newStatsStr);
+          sessionStorage.setItem("referral_stats", newStatsStr);
         }
       } else {
         // Initialize referral stats if not found
         const newReferralStats = {
           [currentUsername]: { members: 0, earnings: 0 }
         };
-        localStorage.setItem("referral_stats", JSON.stringify(newReferralStats));
+        const newStatsStr = JSON.stringify(newReferralStats);
+        localStorage.setItem("referral_stats", newStatsStr);
+        sessionStorage.setItem("referral_stats", newStatsStr);
       }
     } catch (error) {
       console.error('Error parsing referral stats:', error);
@@ -80,16 +91,18 @@ const MemberArea = () => {
       const newReferralStats = {
         [currentUsername]: { members: 0, earnings: 0 }
       };
-      localStorage.setItem("referral_stats", JSON.stringify(newReferralStats));
+      const newStatsStr = JSON.stringify(newReferralStats);
+      localStorage.setItem("referral_stats", newStatsStr);
+      sessionStorage.setItem("referral_stats", newStatsStr);
     }
   };
   
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isChecking) {
       // Load initial user data and stats
       loadUserData();
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isChecking, navigate]);
   
   const handleCopyLink = () => {
     navigator.clipboard.writeText(affiliateLink);
@@ -116,8 +129,14 @@ const MemberArea = () => {
     }
   };
 
+  if (isChecking) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <p className="text-lg">Loading...</p>
+    </div>;
+  }
+
   if (!isAuthenticated) {
-    return null; // Don't render anything while checking authentication
+    return null; // Don't render anything if not authenticated
   }
 
   return (

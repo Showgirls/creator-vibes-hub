@@ -34,35 +34,83 @@ const Login = () => {
   useEffect(() => {
     try {
       console.log("Checking login state on Login page");
-      const username = localStorage.getItem("user_username");
+      
+      // Check both localStorage and sessionStorage
+      const usernameLocal = localStorage.getItem("user_username");
+      const usernameSession = sessionStorage.getItem("user_username");
+      const username = usernameSession || usernameLocal;
       
       if (username) {
+        // If found in one storage but not the other, sync them
+        if (usernameLocal && !usernameSession) {
+          sessionStorage.setItem("user_username", usernameLocal);
+        } else if (!usernameLocal && usernameSession) {
+          localStorage.setItem("user_username", usernameSession);
+        }
+        
         // Verify user in all_users
-        const allUsersStr = localStorage.getItem("all_users");
+        const allUsersStrLocal = localStorage.getItem("all_users");
+        const allUsersStrSession = sessionStorage.getItem("all_users");
+        
+        // Use whichever storage has the data
+        const allUsersStr = allUsersStrSession || allUsersStrLocal;
+        
         if (allUsersStr) {
           try {
             const allUsers = JSON.parse(allUsersStr);
+            
+            // Sync all_users between storages
+            if (allUsersStrLocal && !allUsersStrSession) {
+              sessionStorage.setItem("all_users", allUsersStrLocal);
+            } else if (!allUsersStrLocal && allUsersStrSession) {
+              localStorage.setItem("all_users", allUsersStrSession);
+            }
+            
             if (allUsers[username]) {
               console.log("User already logged in:", username);
+              
+              // Ensure user_data is in sync
+              const userDataLocal = localStorage.getItem("user_data");
+              const userDataSession = sessionStorage.getItem("user_data");
+              
+              // Sync user_data between storages if needed
+              if (userDataLocal && !userDataSession) {
+                sessionStorage.setItem("user_data", userDataLocal);
+              } else if (!userDataLocal && userDataSession) {
+                localStorage.setItem("user_data", userDataSession);
+              } else if (!userDataLocal && !userDataSession) {
+                // If user_data is missing from both storages but user exists in all_users
+                const userData = JSON.stringify(allUsers[username]);
+                localStorage.setItem("user_data", userData);
+                sessionStorage.setItem("user_data", userData);
+              }
+              
               navigate("/member-area");
               return;
             }
           } catch (e) {
             console.error("Error parsing all_users on Login page:", e);
+            // Clear inconsistent data
             localStorage.removeItem("user_username");
             localStorage.removeItem("user_data");
+            sessionStorage.removeItem("user_username");
+            sessionStorage.removeItem("user_data");
           }
         } else {
           // If all_users doesn't exist, clear user data
           console.log("No all_users data found, clearing user data");
           localStorage.removeItem("user_username");
           localStorage.removeItem("user_data");
+          sessionStorage.removeItem("user_username");
+          sessionStorage.removeItem("user_data");
         }
       }
     } catch (error) {
       console.error("Error checking login state:", error);
       localStorage.removeItem("user_username");
       localStorage.removeItem("user_data");
+      sessionStorage.removeItem("user_username");
+      sessionStorage.removeItem("user_data");
     }
   }, [navigate]);
   

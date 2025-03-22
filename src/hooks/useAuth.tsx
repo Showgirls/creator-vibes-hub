@@ -125,7 +125,8 @@ export const loginUser = (username: string, userData: User): boolean => {
   try {
     console.log("Attempting to login user:", username);
     
-    // Always save the username and user data consistently
+    // Explicitly synchronize with sessionStorage for cross-tab persistence
+    sessionStorage.setItem("user_username", username);
     localStorage.setItem("user_username", username);
     
     // Update the timestamp
@@ -135,7 +136,9 @@ export const loginUser = (username: string, userData: User): boolean => {
     };
     
     // Store user_data for the current session
-    localStorage.setItem("user_data", JSON.stringify(updatedUserData));
+    const userDataString = JSON.stringify(updatedUserData);
+    sessionStorage.setItem("user_data", userDataString);
+    localStorage.setItem("user_data", userDataString);
     
     // Update all_users to ensure consistency across sessions
     let allUsers: UserStore = {};
@@ -153,8 +156,11 @@ export const loginUser = (username: string, userData: User): boolean => {
     // Update or create the user in all_users
     allUsers[username] = updatedUserData;
     
-    // Save updated all_users
-    localStorage.setItem("all_users", JSON.stringify(allUsers));
+    // Save updated all_users in both storage types
+    const allUsersString = JSON.stringify(allUsers);
+    localStorage.setItem("all_users", allUsersString);
+    sessionStorage.setItem("all_users", allUsersString);
+    
     console.log("User logged in successfully:", username);
     
     return true;
@@ -171,9 +177,12 @@ export const logoutUser = (): void => {
     const username = localStorage.getItem("user_username");
     console.log("Logging out user:", username);
     
-    // Clear current user data
+    // Clear current user data from both localStorage and sessionStorage
     localStorage.removeItem("user_username");
     localStorage.removeItem("user_data");
+    
+    sessionStorage.removeItem("user_username");
+    sessionStorage.removeItem("user_data");
     
     console.log("User logged out successfully");
   } catch (error) {
@@ -182,6 +191,8 @@ export const logoutUser = (): void => {
     try {
       localStorage.removeItem("user_username");
       localStorage.removeItem("user_data");
+      sessionStorage.removeItem("user_username");
+      sessionStorage.removeItem("user_data");
     } catch (e) {
       console.error("Failed to clear user data:", e);
     }
@@ -192,11 +203,31 @@ export const getCurrentUser = () => {
   if (!isStorageAvailable()) return null;
   
   try {
-    const username = localStorage.getItem("user_username");
-    if (!username) return null;
+    // Try to get from sessionStorage first (current browser tab)
+    let username = sessionStorage.getItem("user_username");
     
-    // First try to get from user_data (current session)
-    const userDataStr = localStorage.getItem("user_data");
+    // If not in sessionStorage, try localStorage (persistent storage)
+    if (!username) {
+      username = localStorage.getItem("user_username");
+      // If found in localStorage but not in sessionStorage, sync to sessionStorage
+      if (username) {
+        sessionStorage.setItem("user_username", username);
+      } else {
+        return null;
+      }
+    }
+    
+    // Try to get user data from sessionStorage first
+    let userDataStr = sessionStorage.getItem("user_data");
+    if (!userDataStr) {
+      // If not in sessionStorage, try localStorage
+      userDataStr = localStorage.getItem("user_data");
+      if (userDataStr) {
+        // Sync to sessionStorage if found in localStorage
+        sessionStorage.setItem("user_data", userDataStr);
+      }
+    }
+    
     if (userDataStr) {
       try {
         return {
@@ -209,13 +240,22 @@ export const getCurrentUser = () => {
     }
     
     // If user_data is missing, try to get from all_users
-    const allUsersStr = localStorage.getItem("all_users");
+    let allUsersStr = sessionStorage.getItem("all_users");
+    if (!allUsersStr) {
+      allUsersStr = localStorage.getItem("all_users");
+      if (allUsersStr) {
+        sessionStorage.setItem("all_users", allUsersStr);
+      }
+    }
+    
     if (allUsersStr) {
       try {
         const allUsers = JSON.parse(allUsersStr);
         if (allUsers[username]) {
           // Found user in all_users, update user_data for consistency
-          localStorage.setItem("user_data", JSON.stringify(allUsers[username]));
+          const userData = JSON.stringify(allUsers[username]);
+          localStorage.setItem("user_data", userData);
+          sessionStorage.setItem("user_data", userData);
           return {
             username,
             ...allUsers[username]
@@ -363,8 +403,19 @@ export const getAllUsers = () => {
   if (!isStorageAvailable()) return {};
   
   try {
-    const allUsersStr = localStorage.getItem("all_users");
-    if (!allUsersStr) return {};
+    // Try to get from sessionStorage first
+    let allUsersStr = sessionStorage.getItem("all_users");
+    
+    // If not in sessionStorage, try localStorage
+    if (!allUsersStr) {
+      allUsersStr = localStorage.getItem("all_users");
+      if (allUsersStr) {
+        // Sync to sessionStorage if found in localStorage
+        sessionStorage.setItem("all_users", allUsersStr);
+      } else {
+        return {};
+      }
+    }
     
     try {
       return JSON.parse(allUsersStr) as UserStore;
