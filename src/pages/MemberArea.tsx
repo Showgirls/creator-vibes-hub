@@ -31,6 +31,14 @@ const MemberArea = () => {
     earnings: 0
   });
   
+  // Countdown timer state
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
+  
   // Get affiliate link based on username
   const affiliateLink = `${window.location.origin}/?ref=${username}`;
   
@@ -114,6 +122,50 @@ const MemberArea = () => {
     }
   }, [isAuthenticated, isChecking, navigate]);
   
+  // Countdown timer effect
+  useEffect(() => {
+    // Set target date: April 28th 2025 at 8pm UTC - same as home page
+    const targetDate = new Date('2025-04-28T20:00:00Z');
+    
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const difference = targetDate.getTime() - now.getTime();
+      
+      if (difference <= 0) {
+        // Timer expired
+        setTimeLeft({
+          days: 0,
+          hours: 0,
+          minutes: 0,
+          seconds: 0
+        });
+        return;
+      }
+      
+      // Calculate time units
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+      
+      setTimeLeft({ days, hours, minutes, seconds });
+    };
+    
+    // Calculate initially
+    calculateTimeLeft();
+    
+    // Update timer every second
+    const timer = setInterval(calculateTimeLeft, 1000);
+    
+    // Cleanup
+    return () => clearInterval(timer);
+  }, []);
+  
+  // Format timer values to always show two digits
+  const formatNumber = (num: number) => {
+    return num.toString().padStart(2, '0');
+  };
+  
   const handleCopyLink = () => {
     navigator.clipboard.writeText(affiliateLink);
     setCopied(true);
@@ -173,6 +225,39 @@ const MemberArea = () => {
               <LogOut className="mr-2 h-4 w-4" />
               Logout
             </Button>
+          </div>
+
+          {/* Limited Offer Countdown Banner */}
+          <div className="mb-8 px-6 py-4 rounded-lg bg-gradient-to-r from-[#f9166f]/30 to-[#f9166f]/10 border border-[#f9166f]/30">
+            <h2 className="text-2xl md:text-3xl font-bold text-[#FFD700] mb-2">
+              LIMITED LIFETIME MEMBERSHIP OFFER
+            </h2>
+            <p className="text-xl text-[#FFD700] font-semibold mb-4">Closing soon!</p>
+            
+            {/* Countdown timer */}
+            <div className="bg-[#2D3748]/50 rounded-lg p-4 inline-block">
+              <div className="flex justify-center gap-2 sm:gap-4 text-white">
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold">{formatNumber(timeLeft.days)}</div>
+                  <div className="text-xs sm:text-sm">DAYS</div>
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold">:</div>
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold">{formatNumber(timeLeft.hours)}</div>
+                  <div className="text-xs sm:text-sm">HOURS</div>
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold">:</div>
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold">{formatNumber(timeLeft.minutes)}</div>
+                  <div className="text-xs sm:text-sm">MINS</div>
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold">:</div>
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold">{formatNumber(timeLeft.seconds)}</div>
+                  <div className="text-xs sm:text-sm">SECS</div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Premium Status Banner (shows only if premium) */}
