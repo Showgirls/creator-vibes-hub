@@ -28,6 +28,7 @@ const loginSchema = z.object({
 const Login = () => {
   const navigate = useNavigate();
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Check if user is already logged in
   useEffect(() => {
@@ -73,9 +74,10 @@ const Login = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof loginSchema>) => {
+  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     // Reset any previous error
     setLoginError(null);
+    setIsLoading(true);
     
     try {
       console.log("Login attempt for user:", values.username);
@@ -88,6 +90,7 @@ const Login = () => {
         console.log(`Login failed: User ${values.username} not found`);
         setLoginError("Invalid username or password");
         toast.error("Invalid username or password");
+        setIsLoading(false);
         return;
       }
       
@@ -104,7 +107,11 @@ const Login = () => {
         if (success) {
           console.log(`User ${values.username} logged in successfully`);
           toast.success("Login successful!");
-          navigate("/member-area");
+          
+          // Short delay to allow localStorage to settle
+          setTimeout(() => {
+            navigate("/member-area");
+          }, 100);
         } else {
           setLoginError("Failed to save login data");
           toast.error("Login failed");
@@ -118,6 +125,8 @@ const Login = () => {
       console.error('Error during login process:', e);
       setLoginError("An error occurred during login");
       toast.error("An error occurred during login");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -172,8 +181,12 @@ const Login = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full bg-[#f9166f] hover:bg-[#d01359]">
-                Login
+              <Button 
+                type="submit" 
+                className="w-full bg-[#f9166f] hover:bg-[#d01359]"
+                disabled={isLoading}
+              >
+                {isLoading ? "Logging in..." : "Login"}
               </Button>
             </form>
           </Form>

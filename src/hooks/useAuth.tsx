@@ -33,11 +33,13 @@ const isStorageAvailable = () => {
 export const useAuthCheck = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
   
   useEffect(() => {
     // Check for authentication
     if (!isStorageAvailable()) {
       console.error("Local storage is not available");
+      setIsChecking(false);
       navigate("/login");
       return;
     }
@@ -48,9 +50,11 @@ export const useAuthCheck = () => {
       
       if (!username) {
         console.log("No authenticated user found, redirecting to login");
+        // Clean up any partial data
         localStorage.removeItem("user_username");
         localStorage.removeItem("user_data");
         setIsAuthenticated(false);
+        setIsChecking(false);
         navigate("/login");
         return;
       }
@@ -60,6 +64,7 @@ export const useAuthCheck = () => {
       if (!allUsersStr) {
         console.log("No users database found, logging out");
         logoutUser();
+        setIsChecking(false);
         navigate("/login");
         return;
       }
@@ -69,26 +74,48 @@ export const useAuthCheck = () => {
         if (!allUsers[username]) {
           console.log("User exists in session but not in all_users, logging out");
           logoutUser();
+          setIsChecking(false);
           navigate("/login");
           return;
+        }
+        
+        // Update user_data if it doesn't match all_users (sync data between tabs/sessions)
+        const userDataStr = localStorage.getItem("user_data");
+        if (!userDataStr) {
+          // If user_data is missing but user exists in all_users, restore it
+          localStorage.setItem("user_data", JSON.stringify(allUsers[username]));
+        } else {
+          try {
+            const userData = JSON.parse(userDataStr);
+            // If userData doesn't match or is outdated, update from all_users
+            if (JSON.stringify(userData) !== JSON.stringify(allUsers[username])) {
+              localStorage.setItem("user_data", JSON.stringify(allUsers[username]));
+            }
+          } catch (e) {
+            console.error("Error parsing user_data, restoring from all_users:", e);
+            localStorage.setItem("user_data", JSON.stringify(allUsers[username]));
+          }
         }
         
         // Successfully authenticated
         console.log("User authenticated:", username);
         setIsAuthenticated(true);
+        setIsChecking(false);
       } catch (e) {
         console.error("Error parsing user data:", e);
         logoutUser();
+        setIsChecking(false);
         navigate("/login");
       }
     } catch (error) {
       console.error("Error during authentication check:", error);
       logoutUser();
+      setIsChecking(false);
       navigate("/login");
     }
   }, [navigate]);
   
-  return isAuthenticated;
+  return { isAuthenticated, isChecking };
 };
 
 // Helper functions for authentication
