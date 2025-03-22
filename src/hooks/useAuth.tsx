@@ -3,13 +3,17 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // User type definition for better type safety
-interface User {
+export interface User {
   username: string;
   email: string;
   password: string;
   createdAt: string;
   lastLogin: string;
   isPremium: boolean;
+}
+
+interface UserStore {
+  [username: string]: User;
 }
 
 // Simple function to check if storage is available
@@ -44,7 +48,8 @@ export const useAuthCheck = () => {
       
       if (!username) {
         console.log("No authenticated user found, redirecting to login");
-        localStorage.clear(); // Clear all potentially corrupted data
+        localStorage.removeItem("user_username");
+        localStorage.removeItem("user_data");
         setIsAuthenticated(false);
         navigate("/login");
         return;
@@ -60,7 +65,7 @@ export const useAuthCheck = () => {
       }
       
       try {
-        const allUsers = JSON.parse(allUsersStr);
+        const allUsers = JSON.parse(allUsersStr) as UserStore;
         if (!allUsers[username]) {
           console.log("User exists in session but not in all_users, logging out");
           logoutUser();
@@ -87,13 +92,13 @@ export const useAuthCheck = () => {
 };
 
 // Helper functions for authentication
-export const loginUser = (username: string, userData: Partial<User>): boolean => {
+export const loginUser = (username: string, userData: User): boolean => {
   if (!isStorageAvailable()) return false;
   
   try {
     console.log("Attempting to login user:", username);
     
-    // Save user data with timestamp
+    // Always save the username and user data consistently
     localStorage.setItem("user_username", username);
     
     // Update the timestamp
@@ -102,35 +107,30 @@ export const loginUser = (username: string, userData: Partial<User>): boolean =>
       lastLogin: new Date().toISOString()
     };
     
+    // Store user_data for the current session
     localStorage.setItem("user_data", JSON.stringify(updatedUserData));
     
-    // Make sure all_users includes this user
-    const allUsersStr = localStorage.getItem("all_users") || "{}";
+    // Update all_users to ensure consistency across sessions
+    let allUsers: UserStore = {};
+    
     try {
-      const allUsers = JSON.parse(allUsersStr);
-      
-      if (!allUsers[username]) {
-        allUsers[username] = updatedUserData;
-      } else {
-        // Update existing user data
-        allUsers[username] = {
-          ...allUsers[username],
-          ...updatedUserData
-        };
+      const allUsersStr = localStorage.getItem("all_users");
+      if (allUsersStr) {
+        allUsers = JSON.parse(allUsersStr);
       }
-      
-      localStorage.setItem("all_users", JSON.stringify(allUsers));
-      console.log("User logged in successfully:", username);
-      return true;
     } catch (e) {
-      console.error("Error parsing all_users:", e);
-      // Initialize all_users if it's corrupted
-      const newAllUsers = {
-        [username]: updatedUserData
-      };
-      localStorage.setItem("all_users", JSON.stringify(newAllUsers));
-      return true;
+      console.error("Error parsing all_users, creating new user store");
+      allUsers = {};
     }
+    
+    // Update or create the user in all_users
+    allUsers[username] = updatedUserData;
+    
+    // Save updated all_users
+    localStorage.setItem("all_users", JSON.stringify(allUsers));
+    console.log("User logged in successfully:", username);
+    
+    return true;
   } catch (error) {
     console.error("Error saving user data:", error);
     return false;
@@ -141,17 +141,22 @@ export const logoutUser = (): void => {
   if (!isStorageAvailable()) return;
   
   try {
-    console.log("Logging out user");
+    const username = localStorage.getItem("user_username");
+    console.log("Logging out user:", username);
+    
+    // Clear current user data
     localStorage.removeItem("user_username");
     localStorage.removeItem("user_data");
+    
     console.log("User logged out successfully");
   } catch (error) {
     console.error("Error during logout:", error);
     // If error occurs during logout, try to clear everything
     try {
-      localStorage.clear();
+      localStorage.removeItem("user_username");
+      localStorage.removeItem("user_data");
     } catch (e) {
-      console.error("Failed to clear localStorage:", e);
+      console.error("Failed to clear user data:", e);
     }
   }
 };
@@ -163,18 +168,39 @@ export const getCurrentUser = () => {
     const username = localStorage.getItem("user_username");
     if (!username) return null;
     
-    const userData = localStorage.getItem("user_data");
-    if (!userData) return { username };
-    
-    try {
-      return {
-        username,
-        ...JSON.parse(userData)
-      };
-    } catch (e) {
-      console.error("Error parsing user data:", e);
-      return { username };
+    // First try to get from user_data (current session)
+    const userDataStr = localStorage.getItem("user_data");
+    if (userDataStr) {
+      try {
+        return {
+          username,
+          ...JSON.parse(userDataStr)
+        };
+      } catch (e) {
+        console.error("Error parsing user_data:", e);
+      }
     }
+    
+    // If user_data is missing, try to get from all_users
+    const allUsersStr = localStorage.getItem("all_users");
+    if (allUsersStr) {
+      try {
+        const allUsers = JSON.parse(allUsersStr);
+        if (allUsers[username]) {
+          // Found user in all_users, update user_data for consistency
+          localStorage.setItem("user_data", JSON.stringify(allUsers[username]));
+          return {
+            username,
+            ...allUsers[username]
+          };
+        }
+      } catch (e) {
+        console.error("Error parsing all_users:", e);
+      }
+    }
+    
+    // If we get here, we couldn't find valid user data
+    return { username };
   } catch (error) {
     console.error("Error getting current user:", error);
     return null;
@@ -192,40 +218,33 @@ export const updateCurrentUser = (userData: Partial<User>): boolean => {
     const currentUser = getCurrentUser();
     if (!currentUser) return false;
     
-    // Update user data in localStorage
+    // Update user data
     const updatedData = {
       ...currentUser,
       ...userData,
       lastActivity: new Date().toISOString()
     };
     
-    // Update in both places for consistency
+    // Update in user_data for current session
     localStorage.setItem("user_data", JSON.stringify(updatedData));
     
-    // Also update in all_users
-    const allUsersStr = localStorage.getItem("all_users");
-    if (!allUsersStr) {
-      // Initialize all_users if it doesn't exist
-      const newAllUsers = {
-        [username]: updatedData
-      };
-      localStorage.setItem("all_users", JSON.stringify(newAllUsers));
-      return true;
-    }
-    
+    // Also update in all_users for persistence across sessions
     try {
-      const allUsers = JSON.parse(allUsersStr);
-      if (allUsers[username]) {
-        allUsers[username] = {
-          ...allUsers[username],
-          ...userData,
-          lastActivity: new Date().toISOString()
-        };
-        localStorage.setItem("all_users", JSON.stringify(allUsers));
+      let allUsers: UserStore = {};
+      const allUsersStr = localStorage.getItem("all_users");
+      
+      if (allUsersStr) {
+        allUsers = JSON.parse(allUsersStr);
       }
+      
+      allUsers[username] = {
+        ...updatedData
+      };
+      
+      localStorage.setItem("all_users", JSON.stringify(allUsers));
       return true;
     } catch (e) {
-      console.error("Error parsing all_users:", e);
+      console.error("Error updating all_users:", e);
       return false;
     }
   } catch (error) {
@@ -242,12 +261,14 @@ export const registerUser = (username: string, email: string, password: string) 
   try {
     console.log("Registering new user:", username);
     
-    // Initialize all_users if it doesn't exist
-    const allUsersStr = localStorage.getItem("all_users") || "{}";
-    let allUsers;
+    // Initialize or get all_users
+    let allUsers: UserStore = {};
     
     try {
-      allUsers = JSON.parse(allUsersStr);
+      const allUsersStr = localStorage.getItem("all_users");
+      if (allUsersStr) {
+        allUsers = JSON.parse(allUsersStr);
+      }
     } catch (e) {
       console.error("Error parsing all_users, resetting:", e);
       allUsers = {};
@@ -266,7 +287,8 @@ export const registerUser = (username: string, email: string, password: string) 
     }
     
     // Create user
-    const userData = {
+    const userData: User = {
+      username,
       email,
       password,
       createdAt: new Date().toISOString(),
@@ -282,8 +304,13 @@ export const registerUser = (username: string, email: string, password: string) 
     
     // Set up initial referral stats
     try {
-      const referralStatsStr = localStorage.getItem("referral_stats") || "{}";
-      const referralStats = JSON.parse(referralStatsStr);
+      let referralStats = {};
+      const referralStatsStr = localStorage.getItem("referral_stats");
+      
+      if (referralStatsStr) {
+        referralStats = JSON.parse(referralStatsStr);
+      }
+      
       referralStats[username] = { members: 0, earnings: 0 };
       localStorage.setItem("referral_stats", JSON.stringify(referralStats));
     } catch (e) {
@@ -309,11 +336,11 @@ export const getAllUsers = () => {
   if (!isStorageAvailable()) return {};
   
   try {
-    const users = localStorage.getItem("all_users");
-    if (!users) return {};
+    const allUsersStr = localStorage.getItem("all_users");
+    if (!allUsersStr) return {};
     
     try {
-      return JSON.parse(users);
+      return JSON.parse(allUsersStr) as UserStore;
     } catch (e) {
       console.error("Error parsing all_users:", e);
       return {};

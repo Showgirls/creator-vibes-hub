@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { loginUser, getAllUsers } from "@/hooks/useAuth";
+import { loginUser, getAllUsers, User } from "@/hooks/useAuth";
 
 // Login form schema
 const loginSchema = z.object({
@@ -47,13 +48,15 @@ const Login = () => {
             }
           } catch (e) {
             console.error("Error parsing all_users on Login page:", e);
+            localStorage.removeItem("user_username");
+            localStorage.removeItem("user_data");
           }
+        } else {
+          // If all_users doesn't exist, clear user data
+          console.log("No all_users data found, clearing user data");
+          localStorage.removeItem("user_username");
+          localStorage.removeItem("user_data");
         }
-        
-        // If we got here, the user data is inconsistent
-        console.log("Inconsistent user data, clearing login");
-        localStorage.removeItem("user_username");
-        localStorage.removeItem("user_data");
       }
     } catch (error) {
       console.error("Error checking login state:", error);
@@ -96,7 +99,7 @@ const Login = () => {
         userData.lastLogin = new Date().toISOString();
         
         // Login the user
-        const success = loginUser(values.username, userData);
+        const success = loginUser(values.username, userData as User);
         
         if (success) {
           console.log(`User ${values.username} logged in successfully`);
