@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +8,14 @@ import { ExternalLink, Copy, Check, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthCheck, logoutUser, getCurrentUser, updateCurrentUser } from "@/hooks/useAuth";
 import SolanaPayment from "@/components/SolanaPayment";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const MemberArea = () => {
   // Add authentication check
@@ -16,6 +25,7 @@ const MemberArea = () => {
   const [copied, setCopied] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [username, setUsername] = useState("");
+  const [showLimitedOfferDialog, setShowLimitedOfferDialog] = useState(false);
   const [referralStats, setReferralStats] = useState({
     members: 0,
     earnings: 0
@@ -129,6 +139,10 @@ const MemberArea = () => {
     }
   };
 
+  const handleBuyNowClick = () => {
+    setShowLimitedOfferDialog(true);
+  };
+
   if (isChecking) {
     return <div className="min-h-screen flex items-center justify-center">
       <p className="text-lg">Loading...</p>
@@ -216,18 +230,36 @@ const MemberArea = () => {
                   </Link>
                 </p>
                 <p className="italic text-muted-foreground mb-6">
-                  **Offer is limited to the first 5000 holders of $FkiTT Token (MUST HOLD UNTIL LAUNCH TO BE ELIGIBLE).</strong>
+                  **Offer is limited to the first 5000 holders of $FkiTT Token (MUST HOLD UNTIL LAUNCH TO BE ELIGIBLE).
                 </p>
                 <div className="flex justify-start">
-                  <SolanaPayment 
-                    onPaymentSuccess={handlePaymentSuccess}
-                    tokenAddress={tokenAddress}
-                    adminAddress={adminAddress}
-                    amount={20}
+                  <Button
+                    onClick={handleBuyNowClick}
                     className="w-full sm:w-[180px] bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
                   >
                     BUY NOW
-                  </SolanaPayment>
+                  </Button>
+
+                  {/* Limited Offer Dialog */}
+                  <Dialog open={showLimitedOfferDialog} onOpenChange={setShowLimitedOfferDialog}>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle className="text-xl font-bold text-center">Time is running out!</DialogTitle>
+                        <DialogDescription className="text-center pt-4">
+                          <p className="text-lg mb-6">
+                            This limited lifetime offer is only for the first 5000 holders of FkiTT.
+                          </p>
+                          <Link to="/token">
+                            <Button 
+                              className="w-full sm:w-auto bg-[#f9166f] hover:bg-[#d01359] text-white px-8 py-3 text-lg font-semibold"
+                            >
+                              BUY $FKITT
+                            </Button>
+                          </Link>
+                        </DialogDescription>
+                      </DialogHeader>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </CardContent>
             </Card>
