@@ -8,11 +8,21 @@ const Models = () => {
     <div className="min-h-screen flex flex-col">
       <div className="flex-1 container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold text-center mb-8 text-white">
-            Model Benefits!
-          </h1>
+          {/* Logo at the top */}
+          <div className="text-center mb-8">
+            <img 
+              src="/lovable-uploads/ed9037d0-d55e-4bd5-b525-febf2587d57b.png" 
+              alt="FkiTT Logo" 
+              className="h-16 md:h-20 mx-auto" 
+            />
+          </div>
           
           <div className="glass-card p-6 md:p-8 rounded-lg space-y-6 text-white">
+            {/* Title moved inside the container */}
+            <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-white">
+              Model Benefits!
+            </h1>
+            
             <p className="text-lg">
               FkiTT is revolutionizing the adult content industry with a fair and transparent 
               revenue-sharing model. Unlike other platforms where subscribers pay a separate 
