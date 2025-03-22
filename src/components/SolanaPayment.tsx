@@ -1,12 +1,11 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   Connection, 
   PublicKey, 
   Transaction, 
   SystemProgram, 
   LAMPORTS_PER_SOL,
-  sendAndConfirmTransaction
 } from '@solana/web3.js';
 import { createTransferInstruction, getAssociatedTokenAddress } from '@solana/spl-token';
 import { Button } from "@/components/ui/button";
