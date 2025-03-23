@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import MemberArea from "./pages/MemberArea";
 import Models from "./pages/Models";
 import Contact from "./pages/Contact";
+import TermsOfUse from "./pages/TermsOfUse";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/member-area" element={<MemberArea />} />
           <Route path="/models" element={<Models />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/terms" element={<TermsOfUse />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
