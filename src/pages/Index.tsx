@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { registerUser } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Signup form schema
 const signupSchema = z.object({
@@ -45,6 +46,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
   const navigate = useNavigate();
   const [referredBy, setReferredBy] = useState<string | null>(null);
   const [registrationError, setRegistrationError] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   // Parse referral info from URL on component mount
   useEffect(() => {
@@ -173,7 +175,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
         <img 
           src="/lovable-uploads/ed9037d0-d55e-4bd5-b525-febf2587d57b.png" 
           alt="Creator Space Logo" 
-          className="h-24 mb-8"
+          className={`mb-8 ${isMobile ? "h-16 w-auto" : "h-24 w-auto"}`}
         />
         <div className="w-full max-w-md space-y-8 glass-card p-8 rounded-lg">
           {referredBy && (

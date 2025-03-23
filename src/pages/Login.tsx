@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { loginUser, getAllUsers, User } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Login form schema
 const loginSchema = z.object({
@@ -29,6 +30,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const isMobile = useIsMobile();
   
   // Check if user is already logged in
   useEffect(() => {
@@ -184,7 +186,7 @@ const Login = () => {
         <img 
           src="/lovable-uploads/ed9037d0-d55e-4bd5-b525-febf2587d57b.png" 
           alt="Creator Space Logo" 
-          className="h-24 mb-8"
+          className={`mb-8 ${isMobile ? "h-16 w-auto" : "h-24 w-auto"}`}
         />
         <div className="w-full max-w-md space-y-8 glass-card p-8 rounded-lg">
           <div className="text-center">
