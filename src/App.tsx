@@ -17,6 +17,7 @@ import TermsOfUse from "./pages/TermsOfUse";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import AntiTraffickingStatement from "./pages/AntiTraffickingStatement";
 import FanCreatorContract from "./pages/FanCreatorContract";
+import ComplaintsPolicy from "./pages/ComplaintsPolicy";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/anti-trafficking" element={<AntiTraffickingStatement />} />
           <Route path="/fan-creator-contract" element={<FanCreatorContract />} />
+          <Route path="/complaints" element={<ComplaintsPolicy />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

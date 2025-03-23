@@ -25,7 +25,7 @@ const Footer = () => {
             <ul className="space-y-2">
               <li><Link to="/anti-trafficking" className="hover:text-[#D6BCFA]">Anti-Trafficking Statement</Link></li>
               <li><Link to="/fan-creator-contract" className="hover:text-[#D6BCFA]">Fan-Creator Contract</Link></li>
-              <li><a href="#" className="hover:text-[#D6BCFA]">Complaints Policy</a></li>
+              <li><Link to="/complaints" className="hover:text-[#D6BCFA]">Complaints Policy</Link></li>
             </ul>
           </div>
           <div>
