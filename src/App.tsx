@@ -12,6 +12,7 @@ import Token from "./pages/Token";
 import Login from "./pages/Login";
 import MemberArea from "./pages/MemberArea";
 import Models from "./pages/Models";
+import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/token" element={<Token />} />
           <Route path="/member-area" element={<MemberArea />} />
           <Route path="/models" element={<Models />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
