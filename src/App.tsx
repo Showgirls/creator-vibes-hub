@@ -15,6 +15,7 @@ import Models from "./pages/Models";
 import Contact from "./pages/Contact";
 import TermsOfUse from "./pages/TermsOfUse";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import AntiTraffickingStatement from "./pages/AntiTraffickingStatement";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<TermsOfUse />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/anti-trafficking" element={<AntiTraffickingStatement />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
