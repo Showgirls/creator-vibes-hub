@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
           <div>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-[#D6BCFA]">Affiliates</a></li>
+              <li><Link to="/login" className="hover:text-[#D6BCFA]">Affiliates</Link></li>
               <li><a href="#" className="hover:text-[#D6BCFA]">Contact</a></li>
               <li><a href="#" className="hover:text-[#D6BCFA]">Privacy Policy</a></li>
             </ul>
