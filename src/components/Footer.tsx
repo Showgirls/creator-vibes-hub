@@ -17,20 +17,20 @@ const Footer = () => {
           <div>
             <ul className="space-y-2">
               <li><Link to="/terms" className="hover:text-[#D6BCFA]">Terms of Use</Link></li>
-              <li><a href="#" className="hover:text-[#D6BCFA]">DMCA</a></li>
-              <li><a href="#" className="hover:text-[#D6BCFA]">USC 2257</a></li>
+              <li><Link to="/terms" className="hover:text-[#D6BCFA]">DMCA</Link></li>
+              <li><Link to="/terms" className="hover:text-[#D6BCFA]">USC 2257</Link></li>
             </ul>
           </div>
           <div>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-[#D6BCFA]">Anti-Trafficking Statement</a></li>
+              <li><Link to="/terms" className="hover:text-[#D6BCFA]">Anti-Trafficking Statement</Link></li>
               <li><a href="#" className="hover:text-[#D6BCFA]">Fan-Creator Contract</a></li>
               <li><a href="#" className="hover:text-[#D6BCFA]">Complaints Policy</a></li>
             </ul>
           </div>
           <div>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-[#D6BCFA]">Acceptable Use Policy</a></li>
+              <li><Link to="/terms" className="hover:text-[#D6BCFA]">Acceptable Use Policy</Link></li>
               <li><Link to="/token" className="hover:text-[#D6BCFA]">Token</Link></li>
               <li><Link to="/models" className="hover:text-[#D6BCFA]">Models</Link></li>
             </ul>
