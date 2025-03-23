@@ -22,7 +22,7 @@ const Contact = () => {
               Contact Us
             </h1>
             
-            <p className="text-lg">
+            <p className="text-lg text-center">
               To contact the team at FkiTT please use the details below:
             </p>
             
