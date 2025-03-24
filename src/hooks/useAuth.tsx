@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -9,6 +8,7 @@ export interface User {
   password: string;
   createdAt: string;
   lastLogin: string;
+  lastActivity?: string; // Added this field as optional
   isPremium: boolean;
 }
 
@@ -250,7 +250,7 @@ export const updateCurrentUser = (userData: Partial<User>): boolean => {
     allUsers[username] = {
       ...allUsers[username],
       ...userData,
-      lastActivity: new Date().toISOString()
+      lastLogin: new Date().toISOString() // Changed lastActivity to lastLogin which is defined in the User interface
     };
     
     // Save to both storage types
