@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
 
@@ -33,7 +32,7 @@ const Token = () => {
                   GET STARTED
                 </Button>
               </a>
-              <a href="https://fkitt.com/buy" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+              <a href="https://fkitt.com/token/buy" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
                 <Button 
                   size="lg" 
                   variant="outline" 
