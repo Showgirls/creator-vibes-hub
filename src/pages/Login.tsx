@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,54 +37,23 @@ const Login = () => {
       console.log("Checking login state on Login page");
       
       // Check both localStorage and sessionStorage
-      const usernameLocal = localStorage.getItem("user_username");
-      const usernameSession = sessionStorage.getItem("user_username");
-      const username = usernameSession || usernameLocal;
+      const username = localStorage.getItem("user_username") || sessionStorage.getItem("user_username");
       
       if (username) {
-        // If found in one storage but not the other, sync them
-        if (usernameLocal && !usernameSession) {
-          sessionStorage.setItem("user_username", usernameLocal);
-        } else if (!usernameLocal && usernameSession) {
-          localStorage.setItem("user_username", usernameSession);
-        }
-        
         // Verify user in all_users
-        const allUsersStrLocal = localStorage.getItem("all_users");
-        const allUsersStrSession = sessionStorage.getItem("all_users");
-        
-        // Use whichever storage has the data
-        const allUsersStr = allUsersStrSession || allUsersStrLocal;
+        const allUsersStr = localStorage.getItem("all_users") || sessionStorage.getItem("all_users");
         
         if (allUsersStr) {
           try {
             const allUsers = JSON.parse(allUsersStr);
             
-            // Sync all_users between storages
-            if (allUsersStrLocal && !allUsersStrSession) {
-              sessionStorage.setItem("all_users", allUsersStrLocal);
-            } else if (!allUsersStrLocal && allUsersStrSession) {
-              localStorage.setItem("all_users", allUsersStrSession);
-            }
-            
             if (allUsers[username]) {
               console.log("User already logged in:", username);
               
               // Ensure user_data is in sync
-              const userDataLocal = localStorage.getItem("user_data");
-              const userDataSession = sessionStorage.getItem("user_data");
-              
-              // Sync user_data between storages if needed
-              if (userDataLocal && !userDataSession) {
-                sessionStorage.setItem("user_data", userDataLocal);
-              } else if (!userDataLocal && userDataSession) {
-                localStorage.setItem("user_data", userDataSession);
-              } else if (!userDataLocal && !userDataSession) {
-                // If user_data is missing from both storages but user exists in all_users
-                const userData = JSON.stringify(allUsers[username]);
-                localStorage.setItem("user_data", userData);
-                sessionStorage.setItem("user_data", userData);
-              }
+              const userData = JSON.stringify(allUsers[username]);
+              localStorage.setItem("user_data", userData);
+              sessionStorage.setItem("user_data", userData);
               
               navigate("/member-area");
               return;
@@ -158,7 +126,7 @@ const Login = () => {
           console.log(`User ${values.username} logged in successfully`);
           toast.success("Login successful!");
           
-          // Short delay to allow localStorage to settle
+          // Short delay to allow storage to settle
           setTimeout(() => {
             navigate("/member-area");
           }, 100);
