@@ -18,8 +18,9 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { registerUser } from "@/hooks/useAuth";
+import { registerUser, processReferral } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/lib/supabase";
 
 // Signup form schema
 const signupSchema = z.object({
@@ -51,53 +52,40 @@ const Index = ({ isRegister = false }: IndexProps) => {
   // Parse referral info from URL on component mount
   useEffect(() => {
     // Check if user is already logged in
-    try {
-      console.log("Checking login state on Register page");
-      const username = localStorage.getItem("user_username");
-      
-      if (username) {
-        // Verify user in all_users
-        const allUsersStr = localStorage.getItem("all_users");
-        if (allUsersStr) {
-          try {
-            const allUsers = JSON.parse(allUsersStr);
-            if (allUsers[username]) {
-              console.log("User already logged in:", username);
-              navigate("/member-area");
-              return;
-            }
-          } catch (e) {
-            console.error("Error parsing all_users on Register page:", e);
-          }
+    const checkSession = async () => {
+      try {
+        console.log("Checking login state on Register page");
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          console.log("User already logged in");
+          navigate("/member-area");
+          return;
         }
         
-        // If we got here, the user data is inconsistent
-        console.log("Inconsistent user data, clearing login");
-        localStorage.removeItem("user_username");
-        localStorage.removeItem("user_data");
-      }
-      
-      // Check URL for referral code
-      const urlParams = new URLSearchParams(window.location.search);
-      const ref = urlParams.get('ref');
-      
-      if (ref) {
-        console.log('Setting referral from URL:', ref);
-        localStorage.setItem('referredBy', ref);
-        setReferredBy(ref);
-      } else {
-        // Check localStorage if no URL parameter
-        const storedReferral = localStorage.getItem('referredBy');
-        if (storedReferral) {
-          console.log('Using stored referral:', storedReferral);
-          setReferredBy(storedReferral);
+        // Check URL for referral code
+        const urlParams = new URLSearchParams(window.location.search);
+        const ref = urlParams.get('ref');
+        
+        if (ref) {
+          console.log('Setting referral from URL:', ref);
+          localStorage.setItem('referredBy', ref);
+          setReferredBy(ref);
+        } else {
+          // Check localStorage if no URL parameter
+          const storedReferral = localStorage.getItem('referredBy');
+          if (storedReferral) {
+            console.log('Using stored referral:', storedReferral);
+            setReferredBy(storedReferral);
+          }
         }
+      } catch (error) {
+        console.error("Error checking login state:", error);
       }
-    } catch (error) {
-      console.error("Error checking login state:", error);
-      localStorage.removeItem("user_username");
-      localStorage.removeItem("user_data");
-    }
+    };
+    
+    checkSession();
   }, [navigate]);
 
   const signupForm = useForm<z.infer<typeof signupSchema>>({
@@ -112,7 +100,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
     },
   });
 
-  const onSignupSubmit = (values: z.infer<typeof signupSchema>) => {
+  const onSignupSubmit = async (values: z.infer<typeof signupSchema>) => {
     // Reset any previous error
     setRegistrationError(null);
     
@@ -120,39 +108,14 @@ const Index = ({ isRegister = false }: IndexProps) => {
       console.log("Attempting to register user:", values.username);
       
       // Register the new user
-      const result = registerUser(values.username, values.email, values.password);
+      const result = await registerUser(values.username, values.email, values.password);
       
       if (result.success) {
         console.log("Registration successful for:", values.username);
         
         // Process the referral if it exists
         if (referredBy) {
-          console.log("Processing referral for:", referredBy);
-          try {
-            // Try to update the referrer's stats
-            const referralStatsStr = localStorage.getItem("referral_stats") || "{}";
-            try {
-              const referralStats = JSON.parse(referralStatsStr);
-              
-              // Update or create stats for the referrer
-              if (!referralStats[referredBy]) {
-                referralStats[referredBy] = { members: 0, earnings: 0 };
-              }
-              
-              referralStats[referredBy].members = (referralStats[referredBy].members || 0) + 1;
-              localStorage.setItem("referral_stats", JSON.stringify(referralStats));
-              console.log("Updated referral stats for:", referredBy);
-            } catch (e) {
-              console.error("Error parsing referral stats:", e);
-              // Initialize referral stats if corrupted
-              const newReferralStats = {
-                [referredBy]: { members: 1, earnings: 0 }
-              };
-              localStorage.setItem("referral_stats", JSON.stringify(newReferralStats));
-            }
-          } catch (e) {
-            console.error("Error updating referral stats:", e);
-          }
+          await processReferral(referredBy);
         }
         
         toast.success("Account created successfully!");

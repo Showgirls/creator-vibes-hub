@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import { Link, useNavigate } from "react-router-dom";
 import { ExternalLink, Copy, Check, LogOut } from "lucide-react";
 import { toast } from "sonner";
-import { useAuthCheck, logoutUser, getCurrentUser, updateCurrentUser } from "@/hooks/useAuth";
+import { useAuthCheck, logoutUser, getCurrentUser, updateCurrentUser, getReferralStats } from "@/hooks/useAuth";
 import SolanaPayment from "@/components/SolanaPayment";
 import {
   Dialog,
@@ -45,72 +45,35 @@ const MemberArea = () => {
   const tokenAddress = "3SXgM5nXZ5HZbhPyzaEjfVu5uShDjFPaM7a8TFg9moFm";
   const adminAddress = "44o43y41gytnCtJhaENskAYFoZqg5WyMVskMirbK6bZx";
   
-  // Function to load the latest stats from localStorage
-  const loadUserData = () => {
-    // Get the current user
-    const currentUser = getCurrentUser();
-    if (!currentUser) {
-      console.log("No current user found, redirecting to login");
-      navigate("/login");
-      return;
-    }
-    
-    const currentUsername = currentUser.username;
-    console.log("Loading data for user:", currentUsername);
-    
-    // Update the username state
-    if (username !== currentUsername) {
-      setUsername(currentUsername);
-    }
-    
-    // Check premium status from current user data
-    setIsPremium(currentUser.isPremium === true);
-    console.log("Premium status:", currentUser.isPremium);
-    
-    // Load referral stats from both storages
+  // Function to load the latest stats from Supabase
+  const loadUserData = async () => {
     try {
-      let referralStatsStr = sessionStorage.getItem("referral_stats");
-      if (!referralStatsStr) {
-        referralStatsStr = localStorage.getItem("referral_stats");
-        // Sync to sessionStorage if found in localStorage
-        if (referralStatsStr) {
-          sessionStorage.setItem("referral_stats", referralStatsStr);
-        }
+      // Get the current user
+      const currentUser = await getCurrentUser();
+      if (!currentUser) {
+        console.log("No current user found, redirecting to login");
+        navigate("/login");
+        return;
       }
       
-      if (referralStatsStr && referralStatsStr !== "undefined" && referralStatsStr !== "null") {
-        const allStats = JSON.parse(referralStatsStr);
-        if (allStats && allStats[currentUsername]) {
-          console.log(`Loaded stats for ${currentUsername}:`, allStats[currentUsername]);
-          setReferralStats(allStats[currentUsername]);
-        } else {
-          console.log("No referral stats found for user, initializing empty stats");
-          setReferralStats({ members: 0, earnings: 0 });
-          
-          // Initialize stats for this user
-          allStats[currentUsername] = { members: 0, earnings: 0 };
-          const newStatsStr = JSON.stringify(allStats);
-          localStorage.setItem("referral_stats", newStatsStr);
-          sessionStorage.setItem("referral_stats", newStatsStr);
-        }
-      } else {
-        // Initialize referral stats if not found
-        const newReferralStats = {
-          [currentUsername]: { members: 0, earnings: 0 }
-        };
-        const newStatsStr = JSON.stringify(newReferralStats);
-        localStorage.setItem("referral_stats", newStatsStr);
-        sessionStorage.setItem("referral_stats", newStatsStr);
+      const currentUsername = currentUser.username;
+      console.log("Loading data for user:", currentUsername);
+      
+      // Update the username state
+      if (username !== currentUsername) {
+        setUsername(currentUsername);
       }
+      
+      // Check premium status from current user data
+      setIsPremium(currentUser.isPremium === true);
+      console.log("Premium status:", currentUser.isPremium);
+      
+      // Load referral stats
+      const stats = await getReferralStats(currentUsername);
+      setReferralStats(stats);
     } catch (error) {
-      console.error('Error parsing referral stats:', error);
-      // Initialize referral stats if corrupted
-      const newReferralStats = {
-        [currentUsername]: { members: 0, earnings: 0 }
-      };
-      const newStatsStr = JSON.stringify(newReferralStats);
-      localStorage.setItem("referral_stats", newStatsStr);
-      sessionStorage.setItem("referral_stats", newStatsStr);
+      console.error('Error loading user data:', error);
+      toast.error("Error loading your profile");
     }
   };
   
@@ -172,15 +135,15 @@ const MemberArea = () => {
     setTimeout(() => setCopied(false), 2000);
   };
   
-  const handleLogout = () => {
-    logoutUser();
+  const handleLogout = async () => {
+    await logoutUser();
     toast.success("Logged out successfully");
     navigate("/login");
   };
   
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
     // Update premium status in the current user's data
-    const success = updateCurrentUser({ isPremium: true });
+    const success = await updateCurrentUser({ isPremium: true });
     
     if (success) {
       setIsPremium(true);
