@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,6 +46,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
   const navigate = useNavigate();
   const [referredBy, setReferredBy] = useState<string | null>(null);
   const [registrationError, setRegistrationError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const isMobile = useIsMobile();
 
   // Parse referral info from URL on component mount
@@ -103,6 +103,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
   const onSignupSubmit = async (values: z.infer<typeof signupSchema>) => {
     // Reset any previous error
     setRegistrationError(null);
+    setIsLoading(true);
     
     try {
       console.log("Attempting to register user:", values.username);
@@ -127,8 +128,10 @@ const Index = ({ isRegister = false }: IndexProps) => {
       }
     } catch (e) {
       console.error('Error during registration:', e);
-      setRegistrationError("An error occurred during registration");
-      toast.error("An error occurred during registration");
+      setRegistrationError("An unexpected error occurred during registration. Please try again later.");
+      toast.error("Registration failed due to a server error");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -255,8 +258,12 @@ const Index = ({ isRegister = false }: IndexProps) => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Create Account
+              <Button 
+                type="submit" 
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
           </Form>

@@ -2,8 +2,20 @@
 import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/env';
 
+console.log("Initializing Supabase client with URL:", SUPABASE_URL);
+
 // Create a single supabase client for interacting with your database
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase = createClient(
+  SUPABASE_URL, 
+  SUPABASE_ANON_KEY,
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    }
+  }
+);
 
 // Type definitions for database schema
 export type Database = {

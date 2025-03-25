@@ -190,14 +190,20 @@ export const registerUser = async (username: string, email: string, password: st
     const { data: existingUser, error: checkError } = await supabase
       .from('users')
       .select('username')
-      .eq('username', username)
-      .single();
+      .eq('username', username);
     
-    if (existingUser) {
+    if (checkError) {
+      console.error("Error checking existing username:", checkError);
+      return { success: false, error: "Error checking username availability" };
+    }
+    
+    if (existingUser && existingUser.length > 0) {
+      console.log("Username already exists:", username);
       return { success: false, error: "Username already exists" };
     }
     
     // Register user with Supabase Auth
+    console.log("Attempting to sign up with Supabase Auth");
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -214,8 +220,11 @@ export const registerUser = async (username: string, email: string, password: st
     }
     
     if (!data.user) {
+      console.error("Registration failed: No user returned");
       return { success: false, error: "Registration failed" };
     }
+    
+    console.log("Auth signup successful, creating user profile");
     
     // Create user profile in the users table
     const { error: profileError } = await supabase
@@ -252,7 +261,7 @@ export const registerUser = async (username: string, email: string, password: st
     return { success: true };
   } catch (error) {
     console.error("Error registering user:", error);
-    return { success: false, error: "Registration failed" };
+    return { success: false, error: "Registration failed due to a server error" };
   }
 };
 
