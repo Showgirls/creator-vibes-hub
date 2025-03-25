@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,9 +18,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { registerUser, processReferral } from "@/hooks/useAuth";
+import { registerUser } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { supabase } from "@/lib/supabase";
 
 // Signup form schema
 const signupSchema = z.object({
@@ -46,46 +46,58 @@ const Index = ({ isRegister = false }: IndexProps) => {
   const navigate = useNavigate();
   const [referredBy, setReferredBy] = useState<string | null>(null);
   const [registrationError, setRegistrationError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const isMobile = useIsMobile();
 
   // Parse referral info from URL on component mount
   useEffect(() => {
     // Check if user is already logged in
-    const checkSession = async () => {
-      try {
-        console.log("Checking login state on Register page");
-        
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) {
-          console.log("User already logged in");
-          navigate("/member-area");
-          return;
-        }
-        
-        // Check URL for referral code
-        const urlParams = new URLSearchParams(window.location.search);
-        const ref = urlParams.get('ref');
-        
-        if (ref) {
-          console.log('Setting referral from URL:', ref);
-          localStorage.setItem('referredBy', ref);
-          setReferredBy(ref);
-        } else {
-          // Check localStorage if no URL parameter
-          const storedReferral = localStorage.getItem('referredBy');
-          if (storedReferral) {
-            console.log('Using stored referral:', storedReferral);
-            setReferredBy(storedReferral);
+    try {
+      console.log("Checking login state on Register page");
+      const username = localStorage.getItem("user_username");
+      
+      if (username) {
+        // Verify user in all_users
+        const allUsersStr = localStorage.getItem("all_users");
+        if (allUsersStr) {
+          try {
+            const allUsers = JSON.parse(allUsersStr);
+            if (allUsers[username]) {
+              console.log("User already logged in:", username);
+              navigate("/member-area");
+              return;
+            }
+          } catch (e) {
+            console.error("Error parsing all_users on Register page:", e);
           }
         }
-      } catch (error) {
-        console.error("Error checking login state:", error);
+        
+        // If we got here, the user data is inconsistent
+        console.log("Inconsistent user data, clearing login");
+        localStorage.removeItem("user_username");
+        localStorage.removeItem("user_data");
       }
-    };
-    
-    checkSession();
+      
+      // Check URL for referral code
+      const urlParams = new URLSearchParams(window.location.search);
+      const ref = urlParams.get('ref');
+      
+      if (ref) {
+        console.log('Setting referral from URL:', ref);
+        localStorage.setItem('referredBy', ref);
+        setReferredBy(ref);
+      } else {
+        // Check localStorage if no URL parameter
+        const storedReferral = localStorage.getItem('referredBy');
+        if (storedReferral) {
+          console.log('Using stored referral:', storedReferral);
+          setReferredBy(storedReferral);
+        }
+      }
+    } catch (error) {
+      console.error("Error checking login state:", error);
+      localStorage.removeItem("user_username");
+      localStorage.removeItem("user_data");
+    }
   }, [navigate]);
 
   const signupForm = useForm<z.infer<typeof signupSchema>>({
@@ -100,23 +112,47 @@ const Index = ({ isRegister = false }: IndexProps) => {
     },
   });
 
-  const onSignupSubmit = async (values: z.infer<typeof signupSchema>) => {
+  const onSignupSubmit = (values: z.infer<typeof signupSchema>) => {
     // Reset any previous error
     setRegistrationError(null);
-    setIsLoading(true);
     
     try {
       console.log("Attempting to register user:", values.username);
       
       // Register the new user
-      const result = await registerUser(values.username, values.email, values.password);
+      const result = registerUser(values.username, values.email, values.password);
       
       if (result.success) {
         console.log("Registration successful for:", values.username);
         
         // Process the referral if it exists
         if (referredBy) {
-          await processReferral(referredBy);
+          console.log("Processing referral for:", referredBy);
+          try {
+            // Try to update the referrer's stats
+            const referralStatsStr = localStorage.getItem("referral_stats") || "{}";
+            try {
+              const referralStats = JSON.parse(referralStatsStr);
+              
+              // Update or create stats for the referrer
+              if (!referralStats[referredBy]) {
+                referralStats[referredBy] = { members: 0, earnings: 0 };
+              }
+              
+              referralStats[referredBy].members = (referralStats[referredBy].members || 0) + 1;
+              localStorage.setItem("referral_stats", JSON.stringify(referralStats));
+              console.log("Updated referral stats for:", referredBy);
+            } catch (e) {
+              console.error("Error parsing referral stats:", e);
+              // Initialize referral stats if corrupted
+              const newReferralStats = {
+                [referredBy]: { members: 1, earnings: 0 }
+              };
+              localStorage.setItem("referral_stats", JSON.stringify(newReferralStats));
+            }
+          } catch (e) {
+            console.error("Error updating referral stats:", e);
+          }
         }
         
         toast.success("Account created successfully!");
@@ -128,10 +164,8 @@ const Index = ({ isRegister = false }: IndexProps) => {
       }
     } catch (e) {
       console.error('Error during registration:', e);
-      setRegistrationError("An unexpected error occurred during registration. Please try again later.");
-      toast.error("Registration failed due to a server error");
-    } finally {
-      setIsLoading(false);
+      setRegistrationError("An error occurred during registration");
+      toast.error("An error occurred during registration");
     }
   };
 
@@ -258,12 +292,8 @@ const Index = ({ isRegister = false }: IndexProps) => {
                   </FormItem>
                 )}
               />
-              <Button 
-                type="submit" 
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading ? "Creating Account..." : "Create Account"}
+              <Button type="submit" className="w-full">
+                Create Account
               </Button>
             </form>
           </Form>

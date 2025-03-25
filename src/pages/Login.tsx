@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,9 +16,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { loginUser } from "@/hooks/useAuth";
+import { loginUser, getAllUsers, User } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { supabase } from "@/lib/supabase";
 
 // Login form schema
 const loginSchema = z.object({
@@ -35,22 +33,55 @@ const Login = () => {
   
   // Check if user is already logged in
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        console.log("Checking login state on Login page");
+    try {
+      console.log("Checking login state on Login page");
+      
+      // Check both localStorage and sessionStorage
+      const username = localStorage.getItem("user_username") || sessionStorage.getItem("user_username");
+      
+      if (username) {
+        // Verify user in all_users
+        const allUsersStr = localStorage.getItem("all_users") || sessionStorage.getItem("all_users");
         
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) {
-          console.log("User already logged in");
-          navigate("/member-area");
+        if (allUsersStr) {
+          try {
+            const allUsers = JSON.parse(allUsersStr);
+            
+            if (allUsers[username]) {
+              console.log("User already logged in:", username);
+              
+              // Ensure user_data is in sync
+              const userData = JSON.stringify(allUsers[username]);
+              localStorage.setItem("user_data", userData);
+              sessionStorage.setItem("user_data", userData);
+              
+              navigate("/member-area");
+              return;
+            }
+          } catch (e) {
+            console.error("Error parsing all_users on Login page:", e);
+            // Clear inconsistent data
+            localStorage.removeItem("user_username");
+            localStorage.removeItem("user_data");
+            sessionStorage.removeItem("user_username");
+            sessionStorage.removeItem("user_data");
+          }
+        } else {
+          // If all_users doesn't exist, clear user data
+          console.log("No all_users data found, clearing user data");
+          localStorage.removeItem("user_username");
+          localStorage.removeItem("user_data");
+          sessionStorage.removeItem("user_username");
+          sessionStorage.removeItem("user_data");
         }
-      } catch (error) {
-        console.error("Error checking login state:", error);
       }
-    };
-    
-    checkSession();
+    } catch (error) {
+      console.error("Error checking login state:", error);
+      localStorage.removeItem("user_username");
+      localStorage.removeItem("user_data");
+      sessionStorage.removeItem("user_username");
+      sessionStorage.removeItem("user_data");
+    }
   }, [navigate]);
   
   const form = useForm<z.infer<typeof loginSchema>>({
@@ -67,14 +98,46 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      const result = await loginUser(values.username, values.password);
+      console.log("Login attempt for user:", values.username);
       
-      if (result.success) {
-        toast.success("Login successful!");
-        navigate("/member-area");
+      // Get all users
+      const allUsers = getAllUsers();
+      
+      // Check if the user exists
+      if (!allUsers[values.username]) {
+        console.log(`Login failed: User ${values.username} not found`);
+        setLoginError("Invalid username or password");
+        toast.error("Invalid username or password");
+        setIsLoading(false);
+        return;
+      }
+      
+      // Verify the password
+      const userData = allUsers[values.username];
+      
+      if (userData.password === values.password) {
+        // Update last login time
+        userData.lastLogin = new Date().toISOString();
+        
+        // Login the user
+        const success = loginUser(values.username, userData as User);
+        
+        if (success) {
+          console.log(`User ${values.username} logged in successfully`);
+          toast.success("Login successful!");
+          
+          // Short delay to allow storage to settle
+          setTimeout(() => {
+            navigate("/member-area");
+          }, 100);
+        } else {
+          setLoginError("Failed to save login data");
+          toast.error("Login failed");
+        }
       } else {
-        setLoginError(result.error || "Invalid username or password");
-        toast.error(result.error || "Login failed");
+        console.log(`Login failed: Incorrect password for ${values.username}`);
+        setLoginError("Invalid username or password");
+        toast.error("Invalid username or password");
       }
     } catch (e) {
       console.error('Error during login process:', e);
