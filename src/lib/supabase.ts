@@ -1,12 +1,9 @@
 
 import { createClient } from '@supabase/supabase-js';
-
-// These environment variables should be set in your Supabase project settings
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/env';
 
 // Create a single supabase client for interacting with your database
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Type definitions for database schema
 export type Database = {
