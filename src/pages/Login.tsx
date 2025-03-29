@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -16,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { loginUser, getAllUsers, User } from "@/hooks/useAuth";
+import { loginUser, getAllUsers } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Login form schema
@@ -30,59 +31,6 @@ const Login = () => {
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const isMobile = useIsMobile();
-  
-  // Check if user is already logged in
-  useEffect(() => {
-    try {
-      console.log("Checking login state on Login page");
-      
-      // Check both localStorage and sessionStorage
-      const username = localStorage.getItem("user_username") || sessionStorage.getItem("user_username");
-      
-      if (username) {
-        // Verify user in all_users
-        const allUsersStr = localStorage.getItem("all_users") || sessionStorage.getItem("all_users");
-        
-        if (allUsersStr) {
-          try {
-            const allUsers = JSON.parse(allUsersStr);
-            
-            if (allUsers[username]) {
-              console.log("User already logged in:", username);
-              
-              // Ensure user_data is in sync
-              const userData = JSON.stringify(allUsers[username]);
-              localStorage.setItem("user_data", userData);
-              sessionStorage.setItem("user_data", userData);
-              
-              navigate("/member-area");
-              return;
-            }
-          } catch (e) {
-            console.error("Error parsing all_users on Login page:", e);
-            // Clear inconsistent data
-            localStorage.removeItem("user_username");
-            localStorage.removeItem("user_data");
-            sessionStorage.removeItem("user_username");
-            sessionStorage.removeItem("user_data");
-          }
-        } else {
-          // If all_users doesn't exist, clear user data
-          console.log("No all_users data found, clearing user data");
-          localStorage.removeItem("user_username");
-          localStorage.removeItem("user_data");
-          sessionStorage.removeItem("user_username");
-          sessionStorage.removeItem("user_data");
-        }
-      }
-    } catch (error) {
-      console.error("Error checking login state:", error);
-      localStorage.removeItem("user_username");
-      localStorage.removeItem("user_data");
-      sessionStorage.removeItem("user_username");
-      sessionStorage.removeItem("user_data");
-    }
-  }, [navigate]);
   
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -116,20 +64,13 @@ const Login = () => {
       const userData = allUsers[values.username];
       
       if (userData.password === values.password) {
-        // Update last login time
-        userData.lastLogin = new Date().toISOString();
-        
         // Login the user
-        const success = loginUser(values.username, userData as User);
+        const success = loginUser(values.username, userData);
         
         if (success) {
           console.log(`User ${values.username} logged in successfully`);
           toast.success("Login successful!");
-          
-          // Short delay to allow storage to settle
-          setTimeout(() => {
-            navigate("/member-area");
-          }, 100);
+          navigate("/member-area");
         } else {
           setLoginError("Failed to save login data");
           toast.error("Login failed");
