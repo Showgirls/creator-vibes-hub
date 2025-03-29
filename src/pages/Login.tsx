@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -33,6 +33,15 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const isMobile = useIsMobile();
   
+  // Check if user is already logged in
+  useEffect(() => {
+    const currentUser = localStorage.getItem("user_username");
+    if (currentUser) {
+      // If user is already logged in, redirect to member area
+      navigate("/member-area");
+    }
+  }, [navigate]);
+  
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -49,11 +58,11 @@ const Login = () => {
     try {
       console.log("Login attempt for user:", values.username);
       
-      // Initialize users if not exists
+      // Get all registered users
       const allUsers = getAllUsers();
       console.log("Available users:", Object.keys(allUsers));
       
-      // Check if the user exists
+      // Check if user exists
       if (!allUsers[values.username]) {
         console.log(`Login failed: User ${values.username} not found`);
         setLoginError("Invalid username or password");
@@ -62,7 +71,7 @@ const Login = () => {
         return;
       }
       
-      // Verify the password
+      // Verify password
       const userData = allUsers[values.username];
       
       if (userData.password === values.password) {
@@ -76,7 +85,7 @@ const Login = () => {
           navigate("/member-area");
         } else {
           console.error("Failed to save login data to localStorage");
-          setLoginError("Failed to save login data");
+          setLoginError("Login failed - please try again");
           toast.error("Login failed");
         }
       } else {
@@ -95,7 +104,7 @@ const Login = () => {
 
   // For debugging - will show available users in development mode
   const debugUsers = () => {
-    if (process.env.NODE_ENV === 'development') {
+    try {
       const users = getAllUsers();
       console.log("Available users:", users);
       if (Object.keys(users).length === 0) {
@@ -103,6 +112,9 @@ const Login = () => {
       } else {
         toast.info(`Available users: ${Object.keys(users).join(', ')}`);
       }
+    } catch (error) {
+      console.error("Error accessing users:", error);
+      toast.error("Error accessing user data");
     }
   };
 
@@ -171,18 +183,16 @@ const Login = () => {
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
 
-              {process.env.NODE_ENV === 'development' && (
-                <div className="text-center mt-2">
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={debugUsers}
-                  >
-                    Debug: Show Available Users
-                  </Button>
-                </div>
-              )}
+              <div className="text-center mt-2">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={debugUsers}
+                >
+                  Show Available Users
+                </Button>
+              </div>
             </form>
           </Form>
 

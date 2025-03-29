@@ -18,7 +18,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { registerUser } from "@/hooks/useAuth";
+import { registerUser, getReferral, setReferral } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Signup form schema
@@ -45,7 +45,7 @@ interface IndexProps {
 const Index = ({ isRegister = false }: IndexProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [referredBy, setReferredBy] = useState<string | null>(null);
+  const [referredBy, setReferredByState] = useState<string | null>(null);
   const [registrationError, setRegistrationError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const isMobile = useIsMobile();
@@ -53,26 +53,34 @@ const Index = ({ isRegister = false }: IndexProps) => {
   // Check for referral in URL
   useEffect(() => {
     try {
+      // Check if user is already logged in
+      const currentUser = localStorage.getItem("user_username");
+      if (currentUser) {
+        // If user is already logged in, redirect to member area
+        navigate("/member-area");
+        return;
+      }
+      
       // Check URL for referral code
       const urlParams = new URLSearchParams(location.search);
       const ref = urlParams.get('ref');
       
       if (ref) {
         console.log('Setting referral from URL:', ref);
-        localStorage.setItem('referredBy', ref);
-        setReferredBy(ref);
+        setReferral(ref);
+        setReferredByState(ref);
       } else {
         // Check localStorage if no URL parameter
-        const storedReferral = localStorage.getItem('referredBy');
+        const storedReferral = getReferral();
         if (storedReferral) {
           console.log('Using stored referral:', storedReferral);
-          setReferredBy(storedReferral);
+          setReferredByState(storedReferral);
         }
       }
     } catch (error) {
       console.error("Error checking referral:", error);
     }
-  }, [location]);
+  }, [location, navigate]);
 
   const signupForm = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),

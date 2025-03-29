@@ -16,38 +16,71 @@ interface UserStore {
   [username: string]: User;
 }
 
-// Simple storage access helper
-const getStorage = (key: string): any => {
-  try {
-    const value = localStorage.getItem(key);
-    if (!value) return null;
-    
+// Storage keys
+const STORAGE_KEYS = {
+  ALL_USERS: "all_users",
+  CURRENT_USER: "user_username",
+  USER_DATA: "user_data",
+  REFERRAL: "referredBy",
+  REFERRAL_STATS: "referral_stats"
+};
+
+// Safe localStorage operations with proper error handling
+const storage = {
+  get: (key: string): any => {
     try {
-      return JSON.parse(value);
-    } catch (e) {
-      console.error(`Error parsing JSON for ${key}:`, e);
+      const value = localStorage.getItem(key);
+      return value ? JSON.parse(value) : null;
+    } catch (error) {
+      console.error(`Error getting ${key} from storage:`, error);
       return null;
     }
-  } catch (e) {
-    console.error(`Error getting ${key} from storage:`, e);
-    return null;
+  },
+  
+  set: (key: string, value: any): boolean => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (error) {
+      console.error(`Error saving ${key} to storage:`, error);
+      return false;
+    }
+  },
+  
+  remove: (key: string): boolean => {
+    try {
+      localStorage.removeItem(key);
+      return true;
+    } catch (error) {
+      console.error(`Error removing ${key} from storage:`, error);
+      return false;
+    }
+  },
+  
+  getRaw: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      console.error(`Error getting raw ${key} from storage:`, error);
+      return null;
+    }
+  },
+  
+  setRaw: (key: string, value: string): boolean => {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch (error) {
+      console.error(`Error saving raw ${key} to storage:`, error);
+      return false;
+    }
   }
 };
 
-const setStorage = (key: string, value: any): boolean => {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    return true;
-  } catch (e) {
-    console.error(`Error setting ${key} in storage:`, e);
-    return false;
-  }
-};
-
-// Ensure users store exists
-const initializeUserStore = () => {
-  if (!getStorage("all_users")) {
-    setStorage("all_users", {});
+// Initialize the users store if it doesn't exist
+const initializeUserStore = (): void => {
+  if (!storage.get(STORAGE_KEYS.ALL_USERS)) {
+    storage.set(STORAGE_KEYS.ALL_USERS, {});
     console.log("Initialized empty user store");
   }
 };
@@ -59,41 +92,35 @@ export const useAuthCheck = () => {
   const [isChecking, setIsChecking] = useState(true);
   
   useEffect(() => {
-    try {
-      // Initialize users store if not exists
-      initializeUserStore();
-      
-      const username = localStorage.getItem("user_username");
-      console.log("Auth check for username:", username);
-      
-      if (!username) {
-        console.log("No authenticated user found");
-        setIsAuthenticated(false);
-        setIsChecking(false);
-        navigate("/login");
-        return;
-      }
-      
-      // Verify the user exists
-      const allUsers = getAllUsers();
-      if (!allUsers[username]) {
-        console.log("User not found in storage");
-        logoutUser();
-        setIsAuthenticated(false);
-        setIsChecking(false);
-        navigate("/login");
-        return;
-      }
-      
-      // User is valid
-      setIsAuthenticated(true);
-      setIsChecking(false);
-    } catch (error) {
-      console.error("Error during authentication check:", error);
+    // Initialize users store if it doesn't exist
+    initializeUserStore();
+    
+    // Get current user from storage
+    const username = storage.getRaw(STORAGE_KEYS.CURRENT_USER);
+    console.log("Auth check for username:", username);
+    
+    if (!username) {
+      console.log("No authenticated user found");
       setIsAuthenticated(false);
       setIsChecking(false);
       navigate("/login");
+      return;
     }
+    
+    // Verify user exists in storage
+    const allUsers = getAllUsers();
+    if (!allUsers[username]) {
+      console.log("User not found in storage, logging out");
+      logoutUser();
+      setIsAuthenticated(false);
+      setIsChecking(false);
+      navigate("/login");
+      return;
+    }
+    
+    // User is valid
+    setIsAuthenticated(true);
+    setIsChecking(false);
   }, [navigate]);
   
   return { isAuthenticated, isChecking };
@@ -101,47 +128,47 @@ export const useAuthCheck = () => {
 
 // Get all users from storage
 export const getAllUsers = (): UserStore => {
-  // Initialize users store if not exists
+  // Always ensure the store is initialized
   initializeUserStore();
   
-  const allUsers = getStorage("all_users");
+  const allUsers = storage.get(STORAGE_KEYS.ALL_USERS);
   return allUsers || {};
 };
 
 // Login user
 export const loginUser = (username: string, userData: User): boolean => {
   try {
-    // Initialize users store if not exists
+    // Ensure the user store is initialized
     initializeUserStore();
     
     // Get all users
     const allUsers = getAllUsers();
     
-    // Make sure user exists
+    // Verify the user exists
     if (!allUsers[username]) {
-      console.error(`User ${username} not found in storage`);
+      console.error(`Login failed: User ${username} not found`);
       return false;
     }
     
-    // Update user data with login time
+    // Update last login time
     allUsers[username] = {
       ...allUsers[username],
       lastLogin: new Date().toISOString()
     };
     
-    // Save updated users
-    const savedUsers = setStorage("all_users", allUsers);
-    if (!savedUsers) {
-      console.error("Failed to save updated users");
+    // Save updated users data
+    if (!storage.set(STORAGE_KEYS.ALL_USERS, allUsers)) {
+      console.error("Failed to update user login time");
       return false;
     }
     
-    // Set current user
-    localStorage.setItem("user_username", username);
-    const savedUserData = setStorage("user_data", allUsers[username]);
+    // Set current user session
+    storage.setRaw(STORAGE_KEYS.CURRENT_USER, username);
     
-    if (!savedUserData) {
+    // Save user data for quick access
+    if (!storage.set(STORAGE_KEYS.USER_DATA, allUsers[username])) {
       console.error("Failed to save user data");
+      logoutUser();
       return false;
     }
     
@@ -156,8 +183,8 @@ export const loginUser = (username: string, userData: User): boolean => {
 // Logout user
 export const logoutUser = (): void => {
   try {
-    localStorage.removeItem("user_username");
-    localStorage.removeItem("user_data");
+    storage.remove(STORAGE_KEYS.CURRENT_USER);
+    storage.remove(STORAGE_KEYS.USER_DATA);
     console.log("User logged out successfully");
   } catch (error) {
     console.error("Error during logout:", error);
@@ -165,18 +192,24 @@ export const logoutUser = (): void => {
 };
 
 // Get current user data
-export const getCurrentUser = () => {
+export const getCurrentUser = (): User | null => {
   try {
-    const username = localStorage.getItem("user_username");
+    const username = storage.getRaw(STORAGE_KEYS.CURRENT_USER);
     if (!username) return null;
     
-    const userData = getStorage("user_data");
-    if (!userData) return null;
+    const userData = storage.get(STORAGE_KEYS.USER_DATA);
+    if (!userData) {
+      // Try to recover user data from all users
+      const allUsers = getAllUsers();
+      if (allUsers[username]) {
+        // Restore missing user data
+        storage.set(STORAGE_KEYS.USER_DATA, allUsers[username]);
+        return allUsers[username];
+      }
+      return null;
+    }
     
-    return {
-      username,
-      ...userData
-    };
+    return userData;
   } catch (error) {
     console.error("Error getting current user:", error);
     return null;
@@ -186,11 +219,17 @@ export const getCurrentUser = () => {
 // Update current user data
 export const updateCurrentUser = (userData: Partial<User>): boolean => {
   try {
-    const username = localStorage.getItem("user_username");
-    if (!username) return false;
+    const username = storage.getRaw(STORAGE_KEYS.CURRENT_USER);
+    if (!username) {
+      console.error("Cannot update user: No user is logged in");
+      return false;
+    }
     
     const allUsers = getAllUsers();
-    if (!allUsers[username]) return false;
+    if (!allUsers[username]) {
+      console.error("Cannot update user: User not found in storage");
+      return false;
+    }
     
     // Update user
     allUsers[username] = {
@@ -198,9 +237,14 @@ export const updateCurrentUser = (userData: Partial<User>): boolean => {
       ...userData
     };
     
-    // Save changes
-    setStorage("all_users", allUsers);
-    setStorage("user_data", allUsers[username]);
+    // Save updates
+    const usersSaved = storage.set(STORAGE_KEYS.ALL_USERS, allUsers);
+    const dataSaved = storage.set(STORAGE_KEYS.USER_DATA, allUsers[username]);
+    
+    if (!usersSaved || !dataSaved) {
+      console.error("Failed to save user updates");
+      return false;
+    }
     
     return true;
   } catch (error) {
@@ -212,7 +256,7 @@ export const updateCurrentUser = (userData: Partial<User>): boolean => {
 // Register a new user
 export const registerUser = (username: string, email: string, password: string) => {
   try {
-    // Initialize users store if not exists
+    // Ensure the user store is initialized
     initializeUserStore();
     
     // Get existing users
@@ -241,39 +285,45 @@ export const registerUser = (username: string, email: string, password: string) 
     
     // Add to all users
     allUsers[username] = newUser;
-    const usersSaved = setStorage("all_users", allUsers);
     
-    if (!usersSaved) {
-      console.error("Failed to save new user");
-      return { success: false, error: "Registration failed" };
+    // Save updated users
+    if (!storage.set(STORAGE_KEYS.ALL_USERS, allUsers)) {
+      console.error("Failed to save new user to storage");
+      return { success: false, error: "Registration failed - storage error" };
     }
     
     // Set up referral stats
-    const referralStats = getStorage("referral_stats") || {};
+    const referralStats = storage.get(STORAGE_KEYS.REFERRAL_STATS) || {};
     referralStats[username] = { members: 0, earnings: 0 };
-    setStorage("referral_stats", referralStats);
+    storage.set(STORAGE_KEYS.REFERRAL_STATS, referralStats);
     
     // Process referral if exists
-    const referredBy = localStorage.getItem("referredBy");
+    const referredBy = storage.getRaw(STORAGE_KEYS.REFERRAL);
     if (referredBy && referredBy !== username) {
       processReferral(referredBy);
     }
     
     // Log in the user
-    loginUser(username, newUser);
+    const loginSuccess = loginUser(username, newUser);
+    if (!loginSuccess) {
+      console.error("User registered but login failed");
+      return { success: true, warning: "Account created but login failed" };
+    }
     
     return { success: true };
   } catch (error) {
     console.error("Error registering user:", error);
-    return { success: false, error: "Registration failed" };
+    return { success: false, error: "Registration failed due to an error" };
   }
 };
 
 // Process a referral
-const processReferral = (referrer: string) => {
+const processReferral = (referrer: string): boolean => {
   try {
-    const referralStats = getStorage("referral_stats") || {};
+    // Get referral stats
+    const referralStats = storage.get(STORAGE_KEYS.REFERRAL_STATS) || {};
     
+    // Initialize if needed
     if (!referralStats[referrer]) {
       referralStats[referrer] = { members: 0, earnings: 0 };
     }
@@ -282,12 +332,47 @@ const processReferral = (referrer: string) => {
     referralStats[referrer].members = (referralStats[referrer].members || 0) + 1;
     
     // Save updated stats
-    setStorage("referral_stats", referralStats);
+    if (!storage.set(STORAGE_KEYS.REFERRAL_STATS, referralStats)) {
+      console.error("Failed to save referral stats");
+      return false;
+    }
+    
     console.log("Updated referral stats for:", referrer);
     
     // Clear the referral after processing
-    localStorage.removeItem("referredBy");
-  } catch (e) {
-    console.error("Error processing referral:", e);
+    storage.remove(STORAGE_KEYS.REFERRAL);
+    return true;
+  } catch (error) {
+    console.error("Error processing referral:", error);
+    return false;
   }
+};
+
+// Helper function to store referral information
+export const setReferral = (referrer: string): boolean => {
+  try {
+    // Validate the referrer exists
+    const allUsers = getAllUsers();
+    if (!allUsers[referrer]) {
+      console.warn(`Attempted to set referral for non-existent user: ${referrer}`);
+      return false;
+    }
+    
+    storage.setRaw(STORAGE_KEYS.REFERRAL, referrer);
+    console.log(`Set referral to: ${referrer}`);
+    return true;
+  } catch (error) {
+    console.error("Error setting referral:", error);
+    return false;
+  }
+};
+
+// Get the current referral
+export const getReferral = (): string | null => {
+  return storage.getRaw(STORAGE_KEYS.REFERRAL);
+};
+
+// Clear referral data
+export const clearReferral = (): void => {
+  storage.remove(STORAGE_KEYS.REFERRAL);
 };
