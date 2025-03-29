@@ -1,14 +1,11 @@
 
-import { defineConfig, ConfigEnv } from "vite";
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
-import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
-import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfill';
-import rollupNodePolyFill from 'rollup-plugin-node-polyfills';
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }: ConfigEnv) => {
+export default defineConfig(({ mode }) => {
   return {
     server: {
       host: "::",
@@ -40,25 +37,21 @@ export default defineConfig(({ mode }: ConfigEnv) => {
         // Node.js global to browser globalThis
         define: {
           global: 'globalThis'
-        },
-        // Enable esbuild polyfill plugins
-        plugins: [
-          NodeGlobalsPolyfillPlugin({
-            process: true,
-            buffer: true
-          }),
-          NodeModulesPolyfillPlugin()
-        ]
+        }
+        // Removed the problematic plugins configuration
       }
     },
     build: {
       rollupOptions: {
         plugins: [
           // Enable rollup polyfills plugin
-          // Cast to any to avoid type errors with rollup plugin
+          // using any to avoid type errors
           rollupNodePolyFill() as any
         ]
       }
     }
   };
 });
+
+// Import at the bottom to avoid hoisting issues with the type system
+import rollupNodePolyFill from 'rollup-plugin-node-polyfills';
