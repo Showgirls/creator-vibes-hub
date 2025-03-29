@@ -19,6 +19,7 @@ import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { loginUser, getAllUsers } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { UserCircle, Lock } from "lucide-react";
 
 // Login form schema
 const loginSchema = z.object({
@@ -48,8 +49,9 @@ const Login = () => {
     try {
       console.log("Login attempt for user:", values.username);
       
-      // Get all users
+      // Initialize users if not exists
       const allUsers = getAllUsers();
+      console.log("Available users:", Object.keys(allUsers));
       
       // Check if the user exists
       if (!allUsers[values.username]) {
@@ -65,6 +67,7 @@ const Login = () => {
       
       if (userData.password === values.password) {
         // Login the user
+        console.log(`Password matched for user ${values.username}, logging in`);
         const success = loginUser(values.username, userData);
         
         if (success) {
@@ -72,6 +75,7 @@ const Login = () => {
           toast.success("Login successful!");
           navigate("/member-area");
         } else {
+          console.error("Failed to save login data to localStorage");
           setLoginError("Failed to save login data");
           toast.error("Login failed");
         }
@@ -86,6 +90,19 @@ const Login = () => {
       toast.error("An error occurred during login");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // For debugging - will show available users in development mode
+  const debugUsers = () => {
+    if (process.env.NODE_ENV === 'development') {
+      const users = getAllUsers();
+      console.log("Available users:", users);
+      if (Object.keys(users).length === 0) {
+        toast.info("No users registered yet. Please register first.");
+      } else {
+        toast.info(`Available users: ${Object.keys(users).join(', ')}`);
+      }
     }
   };
 
@@ -121,7 +138,10 @@ const Login = () => {
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="johndoe" {...field} />
+                      <div className="relative">
+                        <UserCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                        <Input placeholder="johndoe" className="pl-10" {...field} />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -134,7 +154,10 @@ const Login = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" {...field} />
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                        <Input type="password" className="pl-10" {...field} />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -147,6 +170,19 @@ const Login = () => {
               >
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
+
+              {process.env.NODE_ENV === 'development' && (
+                <div className="text-center mt-2">
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={debugUsers}
+                  >
+                    Debug: Show Available Users
+                  </Button>
+                </div>
+              )}
             </form>
           </Form>
 

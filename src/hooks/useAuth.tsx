@@ -20,7 +20,14 @@ interface UserStore {
 const getStorage = (key: string): any => {
   try {
     const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) : null;
+    if (!value) return null;
+    
+    try {
+      return JSON.parse(value);
+    } catch (e) {
+      console.error(`Error parsing JSON for ${key}:`, e);
+      return null;
+    }
   } catch (e) {
     console.error(`Error getting ${key} from storage:`, e);
     return null;
@@ -37,6 +44,14 @@ const setStorage = (key: string, value: any): boolean => {
   }
 };
 
+// Ensure users store exists
+const initializeUserStore = () => {
+  if (!getStorage("all_users")) {
+    setStorage("all_users", {});
+    console.log("Initialized empty user store");
+  }
+};
+
 // Auth check hook
 export const useAuthCheck = () => {
   const navigate = useNavigate();
@@ -45,6 +60,9 @@ export const useAuthCheck = () => {
   
   useEffect(() => {
     try {
+      // Initialize users store if not exists
+      initializeUserStore();
+      
       const username = localStorage.getItem("user_username");
       console.log("Auth check for username:", username);
       
@@ -83,6 +101,9 @@ export const useAuthCheck = () => {
 
 // Get all users from storage
 export const getAllUsers = (): UserStore => {
+  // Initialize users store if not exists
+  initializeUserStore();
+  
   const allUsers = getStorage("all_users");
   return allUsers || {};
 };
@@ -90,11 +111,15 @@ export const getAllUsers = (): UserStore => {
 // Login user
 export const loginUser = (username: string, userData: User): boolean => {
   try {
+    // Initialize users store if not exists
+    initializeUserStore();
+    
     // Get all users
     const allUsers = getAllUsers();
     
     // Make sure user exists
     if (!allUsers[username]) {
+      console.error(`User ${username} not found in storage`);
       return false;
     }
     
@@ -105,12 +130,22 @@ export const loginUser = (username: string, userData: User): boolean => {
     };
     
     // Save updated users
-    setStorage("all_users", allUsers);
+    const savedUsers = setStorage("all_users", allUsers);
+    if (!savedUsers) {
+      console.error("Failed to save updated users");
+      return false;
+    }
     
     // Set current user
     localStorage.setItem("user_username", username);
-    setStorage("user_data", allUsers[username]);
+    const savedUserData = setStorage("user_data", allUsers[username]);
     
+    if (!savedUserData) {
+      console.error("Failed to save user data");
+      return false;
+    }
+    
+    console.log(`User ${username} logged in successfully`);
     return true;
   } catch (error) {
     console.error("Error during login:", error);
@@ -177,6 +212,9 @@ export const updateCurrentUser = (userData: Partial<User>): boolean => {
 // Register a new user
 export const registerUser = (username: string, email: string, password: string) => {
   try {
+    // Initialize users store if not exists
+    initializeUserStore();
+    
     // Get existing users
     const allUsers = getAllUsers();
     
@@ -203,7 +241,12 @@ export const registerUser = (username: string, email: string, password: string) 
     
     // Add to all users
     allUsers[username] = newUser;
-    setStorage("all_users", allUsers);
+    const usersSaved = setStorage("all_users", allUsers);
+    
+    if (!usersSaved) {
+      console.error("Failed to save new user");
+      return { success: false, error: "Registration failed" };
+    }
     
     // Set up referral stats
     const referralStats = getStorage("referral_stats") || {};
