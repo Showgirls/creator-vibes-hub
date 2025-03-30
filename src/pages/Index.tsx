@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,7 +17,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { registerUser, getReferral, setReferral } from "@/hooks/useAuth";
+import { registerUser, getReferral, setReferral, getCurrentUser } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Signup form schema
@@ -50,36 +49,40 @@ const Index = ({ isRegister = false }: IndexProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const isMobile = useIsMobile();
 
-  // Check for referral in URL
+  // Check for referral in URL and if user is logged in
   useEffect(() => {
-    try {
-      // Check if user is already logged in
-      const currentUser = localStorage.getItem("user_username");
-      if (currentUser) {
-        // If user is already logged in, redirect to member area
-        navigate("/member-area");
-        return;
-      }
-      
-      // Check URL for referral code
-      const urlParams = new URLSearchParams(location.search);
-      const ref = urlParams.get('ref');
-      
-      if (ref) {
-        console.log('Setting referral from URL:', ref);
-        setReferral(ref);
-        setReferredByState(ref);
-      } else {
-        // Check localStorage if no URL parameter
-        const storedReferral = getReferral();
-        if (storedReferral) {
-          console.log('Using stored referral:', storedReferral);
-          setReferredByState(storedReferral);
+    const init = async () => {
+      try {
+        // Check if user is already logged in
+        const currentUser = await getCurrentUser();
+        if (currentUser) {
+          // If user is already logged in, redirect to member area
+          navigate("/member-area");
+          return;
         }
+        
+        // Check URL for referral code
+        const urlParams = new URLSearchParams(location.search);
+        const ref = urlParams.get('ref');
+        
+        if (ref) {
+          console.log('Setting referral from URL:', ref);
+          await setReferral(ref);
+          setReferredByState(ref);
+        } else {
+          // Check storage if no URL parameter
+          const storedReferral = await getReferral();
+          if (storedReferral) {
+            console.log('Using stored referral:', storedReferral);
+            setReferredByState(storedReferral);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking referral:", error);
       }
-    } catch (error) {
-      console.error("Error checking referral:", error);
-    }
+    };
+    
+    init();
   }, [location, navigate]);
 
   const signupForm = useForm<z.infer<typeof signupSchema>>({
@@ -94,7 +97,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
     },
   });
 
-  const onSignupSubmit = (values: z.infer<typeof signupSchema>) => {
+  const onSignupSubmit = async (values: z.infer<typeof signupSchema>) => {
     // Reset any previous error
     setRegistrationError(null);
     setIsLoading(true);
@@ -103,7 +106,7 @@ const Index = ({ isRegister = false }: IndexProps) => {
       console.log("Attempting to register user:", values.username);
       
       // Register the new user
-      const result = registerUser(values.username, values.email, values.password);
+      const result = await registerUser(values.username, values.email, values.password);
       
       if (result.success) {
         console.log("Registration successful for:", values.username);

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { User } from "@/utils/auth-types";
 import { 
-  getCurrentUser, 
+  getCurrentUser as getCurrent, 
   loginUser as login, 
   logoutUser as logout,
   registerUser as register,
@@ -37,10 +37,10 @@ export const useAuthCheck = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       try {
-        // Get current user from storage
-        const user = getCurrentUser();
+        // Get current user from IndexedDB
+        const user = await getCurrent();
         console.log("Auth check for user:", user?.username);
         
         if (!user) {
@@ -70,16 +70,26 @@ export const useAuthCheck = () => {
 
 // Custom hook to get and update current user
 export const useUser = () => {
-  const [user, setUser] = useState<User | null>(getCurrentUser());
+  const [user, setUser] = useState<User | null>(null);
   
-  const refreshUser = () => {
-    setUser(getCurrentUser());
+  useEffect(() => {
+    const fetchUser = async () => {
+      const currentUser = await getCurrent();
+      setUser(currentUser);
+    };
+    
+    fetchUser();
+  }, []);
+  
+  const refreshUser = async () => {
+    const currentUser = await getCurrent();
+    setUser(currentUser);
   };
   
-  const updateUser = (data: Partial<User>) => {
-    const success = updateCurrentUser(data);
+  const updateUser = async (data: Partial<User>) => {
+    const success = await update(data);
     if (success) {
-      refreshUser();
+      await refreshUser();
     }
     return success;
   };

@@ -1,38 +1,47 @@
 
 import { User, UserStore, ReferralStatsStore, STORAGE_KEYS } from './auth-types';
-import { storage } from './storage';
+import { dbUsers, dbCurrentUser, dbReferrals, dbRefString } from './indexedDB';
 
 // Initialize the users store if it doesn't exist
-const initializeUserStore = (): void => {
-  if (!storage.get(STORAGE_KEYS.ALL_USERS)) {
-    storage.set(STORAGE_KEYS.ALL_USERS, {});
-    console.log("Initialized empty user store");
-  }
-  
-  // Initialize referral stats store if it doesn't exist
-  if (!storage.get(STORAGE_KEYS.REFERRAL_STATS)) {
-    storage.set(STORAGE_KEYS.REFERRAL_STATS, {});
-    console.log("Initialized empty referral stats store");
+const initializeUserStore = async (): Promise<void> => {
+  try {
+    const allUsers = await dbUsers.getAll();
+    if (Object.keys(allUsers).length === 0) {
+      console.log("Initialized empty user store");
+    }
+    
+    // Initialize referral stats store if it doesn't exist
+    const referralStats = await dbReferrals.getAll();
+    if (Object.keys(referralStats).length === 0) {
+      console.log("Initialized empty referral stats store");
+    }
+  } catch (error) {
+    console.error("Error initializing stores:", error);
   }
 };
 
 // Get all users from storage
-export const getAllUsers = (): UserStore => {
+export const getAllUsers = async (): Promise<UserStore> => {
   // Always ensure the store is initialized
-  initializeUserStore();
+  await initializeUserStore();
   
-  const allUsers = storage.get<UserStore>(STORAGE_KEYS.ALL_USERS);
-  return allUsers || {};
+  try {
+    const allUsers = await dbUsers.getAll();
+    return allUsers || {};
+  } catch (error) {
+    console.error("Error getting all users:", error);
+    return {};
+  }
 };
 
 // Login user
-export const loginUser = (username: string, password: string): { success: boolean; error?: string } => {
+export const loginUser = async (username: string, password: string): Promise<{ success: boolean; error?: string }> => {
   try {
     // Ensure the user store is initialized
-    initializeUserStore();
+    await initializeUserStore();
     
     // Get all users
-    const allUsers = getAllUsers();
+    const allUsers = await getAllUsers();
     
     // Verify the user exists
     if (!allUsers[username]) {
@@ -55,19 +64,18 @@ export const loginUser = (username: string, password: string): { success: boolea
     allUsers[username] = userData;
     
     // Save updated users data
-    if (!storage.set(STORAGE_KEYS.ALL_USERS, allUsers)) {
+    const userSaved = await dbUsers.set(userData);
+    if (!userSaved) {
       console.error("Failed to update user login time");
       return { success: false, error: "Failed to save login data" };
     }
     
     // Set current user session
-    storage.setRaw(STORAGE_KEYS.CURRENT_USER, username);
+    const currentUserSet = await dbCurrentUser.set(username);
     
-    // Save user data for quick access
-    if (!storage.set(STORAGE_KEYS.USER_DATA, userData)) {
-      console.error("Failed to save user data");
-      logoutUser();
-      return { success: false, error: "Failed to save user data" };
+    if (!currentUserSet) {
+      console.error("Failed to set current user");
+      return { success: false, error: "Failed to save session data" };
     }
     
     console.log(`User ${username} logged in successfully`);
@@ -79,10 +87,9 @@ export const loginUser = (username: string, password: string): { success: boolea
 };
 
 // Logout user
-export const logoutUser = (): void => {
+export const logoutUser = async (): Promise<void> => {
   try {
-    storage.remove(STORAGE_KEYS.CURRENT_USER);
-    storage.remove(STORAGE_KEYS.USER_DATA);
+    await dbCurrentUser.remove();
     console.log("User logged out successfully");
   } catch (error) {
     console.error("Error during logout:", error);
@@ -90,20 +97,16 @@ export const logoutUser = (): void => {
 };
 
 // Get current user data
-export const getCurrentUser = (): User | null => {
+export const getCurrentUser = async (): Promise<User | null> => {
   try {
-    const username = storage.getRaw(STORAGE_KEYS.CURRENT_USER);
-    if (!username) return null;
+    const currentUserData = await dbCurrentUser.get();
+    if (!currentUserData) return null;
     
-    const userData = storage.get<User>(STORAGE_KEYS.USER_DATA);
+    const username = currentUserData.username;
+    const userData = await dbUsers.get(username);
+    
     if (!userData) {
-      // Try to recover user data from all users
-      const allUsers = getAllUsers();
-      if (allUsers[username]) {
-        // Restore missing user data
-        storage.set(STORAGE_KEYS.USER_DATA, allUsers[username]);
-        return allUsers[username];
-      }
+      console.error(`User data not found for ${username}`);
       return null;
     }
     
@@ -115,31 +118,32 @@ export const getCurrentUser = (): User | null => {
 };
 
 // Update current user data
-export const updateCurrentUser = (userData: Partial<User>): boolean => {
+export const updateCurrentUser = async (userData: Partial<User>): Promise<boolean> => {
   try {
-    const username = storage.getRaw(STORAGE_KEYS.CURRENT_USER);
-    if (!username) {
+    const currentUserData = await dbCurrentUser.get();
+    if (!currentUserData) {
       console.error("Cannot update user: No user is logged in");
       return false;
     }
     
-    const allUsers = getAllUsers();
-    if (!allUsers[username]) {
+    const username = currentUserData.username;
+    const user = await dbUsers.get(username);
+    
+    if (!user) {
       console.error("Cannot update user: User not found in storage");
       return false;
     }
     
     // Update user
-    allUsers[username] = {
-      ...allUsers[username],
+    const updatedUser = {
+      ...user,
       ...userData
     };
     
     // Save updates
-    const usersSaved = storage.set(STORAGE_KEYS.ALL_USERS, allUsers);
-    const dataSaved = storage.set(STORAGE_KEYS.USER_DATA, allUsers[username]);
+    const userSaved = await dbUsers.set(updatedUser);
     
-    if (!usersSaved || !dataSaved) {
+    if (!userSaved) {
       console.error("Failed to save user updates");
       return false;
     }
@@ -152,14 +156,14 @@ export const updateCurrentUser = (userData: Partial<User>): boolean => {
 };
 
 // Register a new user
-export const registerUser = (username: string, email: string, password: string): 
-  { success: boolean; error?: string; warning?: string } => {
+export const registerUser = async (username: string, email: string, password: string): 
+  Promise<{ success: boolean; error?: string; warning?: string }> => {
   try {
     // Ensure the user store is initialized
-    initializeUserStore();
+    await initializeUserStore();
     
     // Get existing users
-    const allUsers = getAllUsers();
+    const allUsers = await getAllUsers();
     
     // Check if username exists
     if (allUsers[username]) {
@@ -182,33 +186,29 @@ export const registerUser = (username: string, email: string, password: string):
       isPremium: false
     };
     
-    // Add to all users
-    allUsers[username] = newUser;
+    // Add to database
+    const userSaved = await dbUsers.set(newUser);
     
-    // Save updated users
-    if (!storage.set(STORAGE_KEYS.ALL_USERS, allUsers)) {
+    if (!userSaved) {
       console.error("Failed to save new user to storage");
       return { success: false, error: "Registration failed - storage error" };
     }
     
     // Set current user session
-    storage.setRaw(STORAGE_KEYS.CURRENT_USER, username);
+    const sessionSaved = await dbCurrentUser.set(username);
     
-    // Save user data for quick access
-    if (!storage.set(STORAGE_KEYS.USER_DATA, newUser)) {
-      console.error("Failed to save user data");
-      return { success: false, error: "Failed to save user data" };
+    if (!sessionSaved) {
+      console.error("Failed to save user session");
+      return { success: false, error: "Failed to save session data" };
     }
     
     // Set up referral stats
-    const referralStats = storage.get<ReferralStatsStore>(STORAGE_KEYS.REFERRAL_STATS) || {};
-    referralStats[username] = { members: 0, earnings: 0 };
-    storage.set(STORAGE_KEYS.REFERRAL_STATS, referralStats);
+    await dbReferrals.set({ username, members: 0, earnings: 0 });
     
     // Process referral if exists
-    const referredBy = storage.getRaw(STORAGE_KEYS.REFERRAL);
+    const referredBy = await dbRefString.get();
     if (referredBy && referredBy !== username) {
-      processReferral(referredBy);
+      await processReferral(referredBy);
     }
     
     return { success: true };
@@ -219,21 +219,18 @@ export const registerUser = (username: string, email: string, password: string):
 };
 
 // Process a referral
-const processReferral = (referrer: string): boolean => {
+const processReferral = async (referrer: string): Promise<boolean> => {
   try {
     // Get referral stats
-    const referralStats = storage.get<ReferralStatsStore>(STORAGE_KEYS.REFERRAL_STATS) || {};
-    
-    // Initialize if needed
-    if (!referralStats[referrer]) {
-      referralStats[referrer] = { members: 0, earnings: 0 };
-    }
+    const referralData = await dbReferrals.get(referrer) || { username: referrer, members: 0, earnings: 0 };
     
     // Increment members count
-    referralStats[referrer].members = (referralStats[referrer].members || 0) + 1;
+    referralData.members = (referralData.members || 0) + 1;
     
     // Save updated stats
-    if (!storage.set(STORAGE_KEYS.REFERRAL_STATS, referralStats)) {
+    const saved = await dbReferrals.set(referralData);
+    
+    if (!saved) {
       console.error("Failed to save referral stats");
       return false;
     }
@@ -241,7 +238,7 @@ const processReferral = (referrer: string): boolean => {
     console.log("Updated referral stats for:", referrer);
     
     // Clear the referral after processing
-    storage.remove(STORAGE_KEYS.REFERRAL);
+    await dbRefString.remove();
     return true;
   } catch (error) {
     console.error("Error processing referral:", error);

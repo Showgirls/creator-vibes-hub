@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { loginUser, getAllUsers } from "@/hooks/useAuth";
+import { loginUser, getAllUsers, getCurrentUser } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { UserCircle, Lock } from "lucide-react";
 
@@ -34,11 +35,15 @@ const Login = () => {
   
   // Check if user is already logged in
   useEffect(() => {
-    const currentUser = localStorage.getItem("user_username");
-    if (currentUser) {
-      // If user is already logged in, redirect to member area
-      navigate("/member-area");
-    }
+    const checkUser = async () => {
+      const currentUser = await getCurrentUser();
+      if (currentUser) {
+        // If user is already logged in, redirect to member area
+        navigate("/member-area");
+      }
+    };
+    
+    checkUser();
   }, [navigate]);
   
   const form = useForm<z.infer<typeof loginSchema>>({
@@ -58,7 +63,7 @@ const Login = () => {
       console.log("Login attempt for user:", values.username);
       
       // Attempt to log in the user
-      const result = loginUser(values.username, values.password);
+      const result = await loginUser(values.username, values.password);
       
       if (result.success) {
         console.log(`User ${values.username} logged in successfully`);
@@ -79,9 +84,9 @@ const Login = () => {
   };
 
   // For debugging - will show available users in development mode
-  const debugUsers = () => {
+  const debugUsers = async () => {
     try {
-      const users = getAllUsers();
+      const users = await getAllUsers();
       console.log("Available users:", users);
       if (Object.keys(users).length === 0) {
         toast.info("No users registered yet. Please register first.");
