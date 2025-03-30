@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -58,40 +57,17 @@ const Login = () => {
     try {
       console.log("Login attempt for user:", values.username);
       
-      // Get all registered users
-      const allUsers = getAllUsers();
-      console.log("Available users:", Object.keys(allUsers));
+      // Attempt to log in the user
+      const result = loginUser(values.username, values.password);
       
-      // Check if user exists
-      if (!allUsers[values.username]) {
-        console.log(`Login failed: User ${values.username} not found`);
-        setLoginError("Invalid username or password");
-        toast.error("Invalid username or password");
-        setIsLoading(false);
-        return;
-      }
-      
-      // Verify password
-      const userData = allUsers[values.username];
-      
-      if (userData.password === values.password) {
-        // Login the user
-        console.log(`Password matched for user ${values.username}, logging in`);
-        const success = loginUser(values.username, userData);
-        
-        if (success) {
-          console.log(`User ${values.username} logged in successfully`);
-          toast.success("Login successful!");
-          navigate("/member-area");
-        } else {
-          console.error("Failed to save login data to localStorage");
-          setLoginError("Login failed - please try again");
-          toast.error("Login failed");
-        }
+      if (result.success) {
+        console.log(`User ${values.username} logged in successfully`);
+        toast.success("Login successful!");
+        navigate("/member-area");
       } else {
-        console.log(`Login failed: Incorrect password for ${values.username}`);
-        setLoginError("Invalid username or password");
-        toast.error("Invalid username or password");
+        console.log(`Login failed for user ${values.username}: ${result.error}`);
+        setLoginError(result.error || "Login failed");
+        toast.error(result.error || "Login failed");
       }
     } catch (e) {
       console.error('Error during login process:', e);

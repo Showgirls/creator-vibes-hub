@@ -5,7 +5,12 @@ import Footer from "@/components/Footer";
 import { Link, useNavigate } from "react-router-dom";
 import { ExternalLink, Copy, Check, LogOut } from "lucide-react";
 import { toast } from "sonner";
-import { useAuthCheck, logoutUser, getCurrentUser, updateCurrentUser } from "@/hooks/useAuth";
+import { 
+  useAuthCheck, 
+  logoutUser, 
+  updateCurrentUser, 
+  getReferralStats 
+} from "@/hooks/useAuth";
 import SolanaPayment from "@/components/SolanaPayment";
 import {
   Dialog,
@@ -13,12 +18,11 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 
 const MemberArea = () => {
   // Add authentication check
-  const { isAuthenticated, isChecking } = useAuthCheck();
+  const { isAuthenticated, isChecking, currentUser } = useAuthCheck();
   
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
@@ -38,6 +42,20 @@ const MemberArea = () => {
     seconds: 0
   });
   
+  // Load user data and stats
+  useEffect(() => {
+    if (isAuthenticated && currentUser) {
+      setUsername(currentUser.username);
+      setIsPremium(currentUser.isPremium === true);
+      
+      // Load referral stats
+      const stats = getReferralStats(currentUser.username);
+      setReferralStats(stats);
+      
+      console.log("Loaded data for user:", currentUser.username);
+    }
+  }, [isAuthenticated, currentUser]);
+  
   // Get affiliate link based on username
   const affiliateLink = `${window.location.origin}/?ref=${username}`;
   
@@ -45,83 +63,7 @@ const MemberArea = () => {
   const tokenAddress = "3SXgM5nXZ5HZbhPyzaEjfVu5uShDjFPaM7a8TFg9moFm";
   const adminAddress = "44o43y41gytnCtJhaENskAYFoZqg5WyMVskMirbK6bZx";
   
-  // Function to load the latest stats from localStorage
-  const loadUserData = () => {
-    // Get the current user
-    const currentUser = getCurrentUser();
-    if (!currentUser) {
-      console.log("No current user found, redirecting to login");
-      navigate("/login");
-      return;
-    }
-    
-    const currentUsername = currentUser.username;
-    console.log("Loading data for user:", currentUsername);
-    
-    // Update the username state
-    if (username !== currentUsername) {
-      setUsername(currentUsername);
-    }
-    
-    // Check premium status from current user data
-    setIsPremium(currentUser.isPremium === true);
-    console.log("Premium status:", currentUser.isPremium);
-    
-    // Load referral stats from both storages
-    try {
-      let referralStatsStr = sessionStorage.getItem("referral_stats");
-      if (!referralStatsStr) {
-        referralStatsStr = localStorage.getItem("referral_stats");
-        // Sync to sessionStorage if found in localStorage
-        if (referralStatsStr) {
-          sessionStorage.setItem("referral_stats", referralStatsStr);
-        }
-      }
-      
-      if (referralStatsStr && referralStatsStr !== "undefined" && referralStatsStr !== "null") {
-        const allStats = JSON.parse(referralStatsStr);
-        if (allStats && allStats[currentUsername]) {
-          console.log(`Loaded stats for ${currentUsername}:`, allStats[currentUsername]);
-          setReferralStats(allStats[currentUsername]);
-        } else {
-          console.log("No referral stats found for user, initializing empty stats");
-          setReferralStats({ members: 0, earnings: 0 });
-          
-          // Initialize stats for this user
-          allStats[currentUsername] = { members: 0, earnings: 0 };
-          const newStatsStr = JSON.stringify(allStats);
-          localStorage.setItem("referral_stats", newStatsStr);
-          sessionStorage.setItem("referral_stats", newStatsStr);
-        }
-      } else {
-        // Initialize referral stats if not found
-        const newReferralStats = {
-          [currentUsername]: { members: 0, earnings: 0 }
-        };
-        const newStatsStr = JSON.stringify(newReferralStats);
-        localStorage.setItem("referral_stats", newStatsStr);
-        sessionStorage.setItem("referral_stats", newStatsStr);
-      }
-    } catch (error) {
-      console.error('Error parsing referral stats:', error);
-      // Initialize referral stats if corrupted
-      const newReferralStats = {
-        [currentUsername]: { members: 0, earnings: 0 }
-      };
-      const newStatsStr = JSON.stringify(newReferralStats);
-      localStorage.setItem("referral_stats", newStatsStr);
-      sessionStorage.setItem("referral_stats", newStatsStr);
-    }
-  };
-  
-  useEffect(() => {
-    if (isAuthenticated && !isChecking) {
-      // Load initial user data and stats
-      loadUserData();
-    }
-  }, [isAuthenticated, isChecking, navigate]);
-  
-  // Countdown timer effect
+  // Countdown timer effect - keep the same as before
   useEffect(() => {
     // Set target date: April 28th 2025 at 8pm UTC - same as home page
     const targetDate = new Date('2025-04-28T20:00:00Z');
@@ -201,7 +143,9 @@ const MemberArea = () => {
   }
 
   if (!isAuthenticated) {
-    return null; // Don't render anything if not authenticated
+    // Redirect to login if not authenticated
+    navigate("/login");
+    return null;
   }
 
   return (
