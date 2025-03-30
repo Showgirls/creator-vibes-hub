@@ -48,9 +48,13 @@ const MemberArea = () => {
       setUsername(currentUser.username);
       setIsPremium(currentUser.isPremium === true);
       
-      // Load referral stats
-      const stats = getReferralStats(currentUser.username);
-      setReferralStats(stats);
+      // Load referral stats - fix Promise issue
+      const loadStats = async () => {
+        const stats = await getReferralStats(currentUser.username);
+        setReferralStats(stats);
+      };
+      
+      loadStats();
       
       console.log("Loaded data for user:", currentUser.username);
     }

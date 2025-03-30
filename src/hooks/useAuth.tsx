@@ -19,6 +19,7 @@ import {
 } from "@/utils/referral-service";
 
 // Re-export everything from the service
+export const getCurrentUser = getCurrent; // Add this line to fix the export
 export const loginUser = login;
 export const logoutUser = logout;
 export const registerUser = register;
