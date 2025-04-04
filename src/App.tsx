@@ -39,7 +39,6 @@ const App = () => (
           <Route path="/anti-trafficking" element={<AntiTraffickingStatement />} />
           <Route path="/fan-creator-contract" element={<FanCreatorContract />} />
           <Route path="/complaints" element={<ComplaintsPolicy />} />
-          {/* Redirect any login/register attempts to home page */}
           <Route path="/login" element={<Navigate to="/" replace />} />
           <Route path="/register" element={<Navigate to="/" replace />} />
           <Route path="*" element={<NotFound />} />
