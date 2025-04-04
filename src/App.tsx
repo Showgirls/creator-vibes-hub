@@ -6,11 +6,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
 import Home from "./pages/Home";
-import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Token from "./pages/Token";
-import Login from "./pages/Login";
 import MemberArea from "./pages/MemberArea";
 import Models from "./pages/Models";
 import Contact from "./pages/Contact";
@@ -31,8 +29,6 @@ const App = () => (
         <ScrollToTop />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Index isRegister />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/token" element={<Token />} />
           <Route path="/member-area" element={<MemberArea />} />
@@ -43,6 +39,9 @@ const App = () => (
           <Route path="/anti-trafficking" element={<AntiTraffickingStatement />} />
           <Route path="/fan-creator-contract" element={<FanCreatorContract />} />
           <Route path="/complaints" element={<ComplaintsPolicy />} />
+          {/* Redirect any login/register attempts to home page */}
+          <Route path="/login" element={<Navigate to="/" replace />} />
+          <Route path="/register" element={<Navigate to="/" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

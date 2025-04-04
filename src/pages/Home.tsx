@@ -160,20 +160,20 @@ const Home = () => {
             </div>
           </div>
           
-          {/* Action buttons */}
+          {/* Action buttons - UPDATED TEXT AND LINKS */}
           <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mt-4">
-            <Link to="/register" className="w-full sm:w-auto flex-1">
+            <Link to="/member-area" className="w-full sm:w-auto flex-1">
               <Button size="lg" className="w-full bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 sm:py-6 text-base sm:text-lg h-auto">
-                Register Now
+                Enter Now
               </Button>
             </Link>
-            <Link to="/login" className="w-full sm:w-auto flex-1">
+            <Link to="/token" className="w-full sm:w-auto flex-1">
               <Button 
                 size="lg" 
                 variant="outline" 
                 className="w-full border-[#f9166f] text-white hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 sm:py-6 text-base sm:text-lg h-auto"
               >
-                Login
+                Buy $FkiTT Token
               </Button>
             </Link>
           </div>
@@ -202,20 +202,20 @@ const Home = () => {
               </p>
             </div>
             
-            {/* Duplicate action buttons after creators section */}
+            {/* Duplicate action buttons after creators section - UPDATED TEXT AND LINKS */}
             <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mt-6 sm:mt-8">
-              <Link to="/register" className="w-full sm:w-auto flex-1">
+              <Link to="/member-area" className="w-full sm:w-auto flex-1">
                 <Button size="lg" className="w-full bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 sm:py-6 text-base sm:text-lg h-auto">
-                  Register Now
+                  Enter Now
                 </Button>
               </Link>
-              <Link to="/login" className="w-full sm:w-auto flex-1">
+              <Link to="/token" className="w-full sm:w-auto flex-1">
                 <Button 
                   size="lg" 
                   variant="outline" 
                   className="w-full border-[#f9166f] text-white hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 sm:py-6 text-base sm:text-lg h-auto"
                 >
-                  Login
+                  Buy $FkiTT Token
                 </Button>
               </Link>
             </div>
