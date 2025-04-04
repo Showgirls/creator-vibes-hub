@@ -292,6 +292,28 @@ const MemberArea = () => {
             </CardContent>
           </Card>
 
+          {/* Phukk Me & Win Section */}
+          <Card className="glass-card mb-12">
+            <CardContent className="p-6 md:p-8">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                Phukk Me & Win!
+              </h2>
+              <p className="text-foreground mb-6">
+                Do you want a chance to win $10,000 by swiping and voting for hotties? The game is simple, click below to access and vote via twitter. Each post/vote registers you 10 entries into the $10,000 contest.
+              </p>
+              <div className="flex justify-start">
+                <a href="https://phukk.me" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                  <Button 
+                    size="lg" 
+                    className="w-full sm:w-[180px] bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
+                  >
+                    ENTER PHUKK ME
+                  </Button>
+                </a>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Referral Contest Section - Replacing Affiliate Link Section */}
           <Card className="glass-card">
             <CardContent className="p-6 md:p-8">
