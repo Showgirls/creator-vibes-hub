@@ -1,17 +1,12 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Footer from "@/components/Footer";
-import { Link, useNavigate } from "react-router-dom";
-import { ExternalLink, Copy, Check, LogOut } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ExternalLink, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
-import { 
-  useAuthCheck, 
-  logoutUser, 
-  updateCurrentUser, 
-  getReferralStats 
-} from "@/hooks/useAuth";
-import SolanaPayment from "@/components/SolanaPayment";
+import { getReferralStats } from "@/hooks/useAuth";
 import {
   Dialog,
   DialogContent,
@@ -21,18 +16,14 @@ import {
 } from "@/components/ui/dialog";
 
 const MemberArea = () => {
-  // Add authentication check
-  const { isAuthenticated, isChecking, currentUser } = useAuthCheck();
-  
-  const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const [isPremium, setIsPremium] = useState(false);
-  const [username, setUsername] = useState("");
   const [showLimitedOfferDialog, setShowLimitedOfferDialog] = useState(false);
   const [referralStats, setReferralStats] = useState({
     members: 0,
     earnings: 0
   });
+  const [isPremium, setIsPremium] = useState(false);
+  const username = "demo-user"; // Default username for static display
   
   // Countdown timer state
   const [timeLeft, setTimeLeft] = useState({
@@ -42,32 +33,13 @@ const MemberArea = () => {
     seconds: 0
   });
   
-  // Load user data and stats
+  // Check localStorage for premium status on initial load
   useEffect(() => {
-    if (isAuthenticated && currentUser) {
-      setUsername(currentUser.username);
-      setIsPremium(currentUser.isPremium === true);
-      
-      // Load referral stats - fix Promise issue
-      const loadStats = async () => {
-        const stats = await getReferralStats(currentUser.username);
-        setReferralStats(stats);
-      };
-      
-      loadStats();
-      
-      console.log("Loaded data for user:", currentUser.username);
-    }
-  }, [isAuthenticated, currentUser]);
+    const premiumStatus = localStorage.getItem("isPremiumMember") === "true";
+    setIsPremium(premiumStatus);
+  }, []);
   
-  // Get affiliate link based on username
-  const affiliateLink = `${window.location.origin}/?ref=${username}`;
-  
-  // Token and admin addresses for payment
-  const tokenAddress = "3SXgM5nXZ5HZbhPyzaEjfVu5uShDjFPaM7a8TFg9moFm";
-  const adminAddress = "44o43y41gytnCtJhaENskAYFoZqg5WyMVskMirbK6bZx";
-  
-  // Countdown timer effect - keep the same as before
+  // Countdown timer effect
   useEffect(() => {
     // Set target date: April 28th 2025 at 8pm UTC - same as home page
     const targetDate = new Date('2025-04-28T20:00:00Z');
@@ -110,6 +82,9 @@ const MemberArea = () => {
   const formatNumber = (num: number) => {
     return num.toString().padStart(2, '0');
   };
+
+  // Get affiliate link based on username
+  const affiliateLink = `${window.location.origin}/?ref=${username}`;
   
   const handleCopyLink = () => {
     navigator.clipboard.writeText(affiliateLink);
@@ -118,39 +93,9 @@ const MemberArea = () => {
     setTimeout(() => setCopied(false), 2000);
   };
   
-  const handleLogout = () => {
-    logoutUser();
-    toast.success("Logged out successfully");
-    navigate("/login");
-  };
-  
-  const handlePaymentSuccess = () => {
-    // Update premium status in the current user's data
-    const success = updateCurrentUser({ isPremium: true });
-    
-    if (success) {
-      setIsPremium(true);
-      toast.success("Premium membership activated!");
-    } else {
-      toast.error("Error updating membership status");
-    }
-  };
-
   const handleBuyNowClick = () => {
     setShowLimitedOfferDialog(true);
   };
-
-  if (isChecking) {
-    return <div className="min-h-screen flex items-center justify-center">
-      <p className="text-lg">Loading...</p>
-    </div>;
-  }
-
-  if (!isAuthenticated) {
-    // Redirect to login if not authenticated
-    navigate("/login");
-    return null;
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -164,14 +109,14 @@ const MemberArea = () => {
                 className="h-12 md:h-16"
               />
             </div>
-            <Button 
-              variant="outline" 
-              className="border-[#f9166f] text-white hover:bg-[#f9166f]/10"
-              onClick={handleLogout}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
+            <Link to="/">
+              <Button 
+                variant="outline" 
+                className="border-[#f9166f] text-white hover:bg-[#f9166f]/10"
+              >
+                Back to Home
+              </Button>
+            </Link>
           </div>
 
           {/* Limited Offer Countdown Banner */}
