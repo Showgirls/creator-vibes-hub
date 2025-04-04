@@ -1,19 +1,12 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { ExternalLink, Copy, Check } from "lucide-react";
+import { Twitter, Facebook, Mail, Copy, Check, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getReferralStats } from "@/hooks/useAuth";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 const MemberArea = () => {
   const [copied, setCopied] = useState(false);
@@ -79,18 +72,45 @@ const MemberArea = () => {
   }, []);
   
   // Format timer values to always show two digits
-  const formatNumber = (num: number) => {
+  const formatNumber = (num) => {
     return num.toString().padStart(2, '0');
   };
 
-  // Get affiliate link based on username
-  const affiliateLink = `${window.location.origin}/?ref=${username}`;
+  const shareLink = "https://fkitt.com";
+  const shareMessage = "FkiTT is Coming!!! Join the hottest revolution before it is too late!!! Hotties are waiting!\n\nJoin now: https://fkitt.com or join @fkittcom for info!\n#fkitt $fkitt";
   
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(affiliateLink);
+    navigator.clipboard.writeText(shareLink);
     setCopied(true);
-    toast.success("Affiliate link copied to clipboard!");
+    toast.success("Link copied to clipboard!");
     setTimeout(() => setCopied(false), 2000);
+  };
+  
+  const handleCopyMessage = () => {
+    navigator.clipboard.writeText(shareMessage);
+    toast.success("Share message copied to clipboard!");
+  };
+  
+  const handleShareTwitter = () => {
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}`;
+    window.open(twitterUrl, '_blank');
+  };
+  
+  const handleShareFacebook = () => {
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}&quote=${encodeURIComponent(shareMessage)}`;
+    window.open(facebookUrl, '_blank');
+  };
+  
+  const handleShareEmail = () => {
+    const subject = encodeURIComponent("FkiTT is Coming!!!");
+    const body = encodeURIComponent(shareMessage);
+    const emailUrl = `mailto:?subject=${subject}&body=${body}`;
+    window.open(emailUrl, '_blank');
+  };
+  
+  const handleShareTelegram = () => {
+    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(shareLink)}&text=${encodeURIComponent(shareMessage)}`;
+    window.open(telegramUrl, '_blank');
   };
   
   const handleBuyNowClick = () => {
@@ -272,20 +292,31 @@ const MemberArea = () => {
             </CardContent>
           </Card>
 
-          {/* Affiliate Link Section */}
+          {/* Referral Contest Section - Replacing Affiliate Link Section */}
           <Card className="glass-card">
             <CardContent className="p-6 md:p-8">
               <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
-                Affiliate Link
+                Generate a buzz and win $10,000
               </h2>
               <p className="text-foreground mb-6">
-                Refer members and get 5% over everything they spend until eternity. With the same link you get 5% of all earnings by any model you refer.
+                Share the love by copying and pasting the link or by using the share buttons. 1 lucky winner will win $10,000. 
+                To enter the 10k contest, please show proof of your submission {" "}
+                <a 
+                  href="https://fkitt.com/10k" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-[#f9166f] hover:underline flex items-center inline"
+                >
+                  here
+                  <ExternalLink className="inline-block ml-1 w-4 h-4" />
+                </a>.
               </p>
               <div className="flex flex-col space-y-4">
+                {/* Copy Link Section */}
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1 p-3 bg-sidebar rounded-md flex items-center">
                     <span className="text-sm text-foreground font-mono truncate">
-                      {affiliateLink}
+                      {shareLink}
                     </span>
                   </div>
                   <Button
@@ -297,17 +328,58 @@ const MemberArea = () => {
                     {copied ? "Copied!" : "Copy Link"}
                   </Button>
                 </div>
+                
+                {/* Share Buttons */}
                 <div className="p-4 bg-sidebar rounded-md">
-                  <h3 className="text-lg font-semibold mb-2 text-foreground">Your Stats</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-muted p-4 rounded-md">
-                      <p className="text-muted-foreground text-sm">Referred Members</p>
-                      <p className="text-2xl font-bold text-foreground">{referralStats.members}</p>
-                    </div>
-                    <div className="bg-muted p-4 rounded-md">
-                      <p className="text-muted-foreground text-sm">Total Earnings</p>
-                      <p className="text-2xl font-bold text-foreground">${referralStats.earnings.toFixed(2)}</p>
-                    </div>
+                  <h3 className="text-lg font-semibold mb-4 text-foreground">Share on social media</h3>
+                  <div className="flex flex-wrap gap-3">
+                    <Button 
+                      onClick={handleShareTwitter} 
+                      className="bg-[#1DA1F2] hover:bg-[#1DA1F2]/80"
+                    >
+                      <Twitter className="mr-2" />
+                      Twitter
+                    </Button>
+                    <Button 
+                      onClick={handleShareFacebook} 
+                      className="bg-[#3b5998] hover:bg-[#3b5998]/80"
+                    >
+                      <Facebook className="mr-2" />
+                      Facebook
+                    </Button>
+                    <Button 
+                      onClick={handleShareEmail} 
+                      className="bg-[#DB4437] hover:bg-[#DB4437]/80"
+                    >
+                      <Mail className="mr-2" />
+                      Email
+                    </Button>
+                    <Button 
+                      onClick={handleShareTelegram} 
+                      className="bg-[#0088cc] hover:bg-[#0088cc]/80"
+                    >
+                      <img 
+                        src="/lovable-uploads/7cf1fb93-6f35-4b25-a1dd-5358aaa35b12.png" 
+                        alt="Telegram" 
+                        className="w-4 h-4 mr-2" 
+                      />
+                      Telegram
+                    </Button>
+                    <Button 
+                      onClick={handleCopyMessage} 
+                      className="bg-[#333] hover:bg-[#333]/80"
+                    >
+                      <Copy className="mr-2" />
+                      Copy Message
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Share Message Preview */}
+                <div className="p-4 bg-sidebar rounded-md">
+                  <h3 className="text-lg font-semibold mb-2 text-foreground">Share message</h3>
+                  <div className="bg-black/20 p-3 rounded-md">
+                    <p className="text-foreground whitespace-pre-line">{shareMessage}</p>
                   </div>
                 </div>
               </div>
