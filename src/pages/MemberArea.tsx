@@ -292,8 +292,8 @@ const MemberArea = () => {
             </CardContent>
           </Card>
 
-          {/* $FkiTT Token Section */}
-          <Card className="glass-card mb-12">
+          {/* $FkiTT Token Section - Added with higher emphasis */}
+          <Card className="glass-card mb-12 border border-[#f9166f]/30">
             <CardContent className="p-6 md:p-8">
               <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
                 $FkiTT Token
@@ -337,7 +337,7 @@ const MemberArea = () => {
             </CardContent>
           </Card>
 
-          {/* Referral Contest Section - Replacing Affiliate Link Section */}
+          {/* Referral Contest Section */}
           <Card className="glass-card">
             <CardContent className="p-6 md:p-8">
               <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
@@ -356,8 +356,9 @@ const MemberArea = () => {
                   <ExternalLink className="inline-block ml-1 w-4 h-4" />
                 </a>
               </p>
+              
+              {/* Copy Link Section */}
               <div className="flex flex-col space-y-4">
-                {/* Copy Link Section */}
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1 p-3 bg-sidebar rounded-md flex items-center">
                     <span className="text-sm text-foreground font-mono truncate">
