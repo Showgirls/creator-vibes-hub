@@ -292,6 +292,29 @@ const MemberArea = () => {
             </CardContent>
           </Card>
 
+          {/* $FkiTT Token Section */}
+          <Card className="glass-card mb-12">
+            <CardContent className="p-6 md:p-8">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                $FkiTT Token
+              </h2>
+              <p className="text-foreground mb-6">
+                Payment on FkiTT is simple and instant. No nasty surprises on your credit card bill. We use our own token to accept payments and convert that to pay creators in USDT.
+                Launch date: April 15th 2025 1pm UTC
+              </p>
+              <div className="flex justify-start">
+                <Link to="/token" className="w-full sm:w-auto">
+                  <Button 
+                    size="lg" 
+                    className="w-full sm:w-[180px] bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto"
+                  >
+                    MORE INFO
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Phukk Me & Win Section */}
           <Card className="glass-card mb-12">
             <CardContent className="p-6 md:p-8">
