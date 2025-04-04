@@ -293,7 +293,7 @@ const MemberArea = () => {
           </Card>
 
           {/* $FkiTT Token Section - Added with higher emphasis */}
-          <Card className="glass-card mb-12 border border-[#f9166f]/30">
+          <Card className="glass-card mb-12">
             <CardContent className="p-6 md:p-8">
               <h2 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
                 $FkiTT Token
