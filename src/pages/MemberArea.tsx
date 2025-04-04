@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { Twitter, Facebook, Mail, Copy, Check, ExternalLink } from "lucide-react";
+import { Twitter, Mail, Copy, Check, ExternalLink, Reddit } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getReferralStats } from "@/hooks/useAuth";
@@ -96,9 +96,9 @@ const MemberArea = () => {
     window.open(twitterUrl, '_blank');
   };
   
-  const handleShareFacebook = () => {
-    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}&quote=${encodeURIComponent(shareMessage)}`;
-    window.open(facebookUrl, '_blank');
+  const handleShareReddit = () => {
+    const redditUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(shareLink)}&title=${encodeURIComponent("FkiTT is Coming!!!")}`;
+    window.open(redditUrl, '_blank');
   };
   
   const handleShareEmail = () => {
@@ -309,7 +309,7 @@ const MemberArea = () => {
                 >
                   here
                   <ExternalLink className="inline-block ml-1 w-4 h-4" />
-                </a>.
+                </a>
               </p>
               <div className="flex flex-col space-y-4">
                 {/* Copy Link Section */}
@@ -335,28 +335,28 @@ const MemberArea = () => {
                   <div className="flex flex-wrap gap-3">
                     <Button 
                       onClick={handleShareTwitter} 
-                      className="bg-[#1DA1F2] hover:bg-[#1DA1F2]/80"
+                      className="bg-[#1DA1F2] hover:bg-[#1DA1F2]/80 w-[120px] h-[40px]"
                     >
                       <Twitter className="mr-2" />
                       Twitter
                     </Button>
                     <Button 
-                      onClick={handleShareFacebook} 
-                      className="bg-[#3b5998] hover:bg-[#3b5998]/80"
+                      onClick={handleShareReddit} 
+                      className="bg-[#FF4500] hover:bg-[#FF4500]/80 w-[120px] h-[40px]"
                     >
-                      <Facebook className="mr-2" />
-                      Facebook
+                      <Reddit className="mr-2" />
+                      Reddit
                     </Button>
                     <Button 
                       onClick={handleShareEmail} 
-                      className="bg-[#DB4437] hover:bg-[#DB4437]/80"
+                      className="bg-[#DB4437] hover:bg-[#DB4437]/80 w-[120px] h-[40px]"
                     >
                       <Mail className="mr-2" />
                       Email
                     </Button>
                     <Button 
                       onClick={handleShareTelegram} 
-                      className="bg-[#0088cc] hover:bg-[#0088cc]/80"
+                      className="bg-[#0088cc] hover:bg-[#0088cc]/80 w-[120px] h-[40px]"
                     >
                       <img 
                         src="/lovable-uploads/7cf1fb93-6f35-4b25-a1dd-5358aaa35b12.png" 
@@ -367,19 +367,11 @@ const MemberArea = () => {
                     </Button>
                     <Button 
                       onClick={handleCopyMessage} 
-                      className="bg-[#333] hover:bg-[#333]/80"
+                      className="bg-[#333] hover:bg-[#333]/80 w-[120px] h-[40px]"
                     >
                       <Copy className="mr-2" />
-                      Copy Message
+                      Copy
                     </Button>
-                  </div>
-                </div>
-                
-                {/* Share Message Preview */}
-                <div className="p-4 bg-sidebar rounded-md">
-                  <h3 className="text-lg font-semibold mb-2 text-foreground">Share message</h3>
-                  <div className="bg-black/20 p-3 rounded-md">
-                    <p className="text-foreground whitespace-pre-line">{shareMessage}</p>
                   </div>
                 </div>
               </div>
