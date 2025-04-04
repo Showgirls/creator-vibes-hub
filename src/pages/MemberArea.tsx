@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { Twitter, Mail, Copy, Check, ExternalLink, Reddit } from "lucide-react";
+import { Twitter, Mail, Copy, Check, ExternalLink, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getReferralStats } from "@/hooks/useAuth";
@@ -344,7 +344,7 @@ const MemberArea = () => {
                       onClick={handleShareReddit} 
                       className="bg-[#FF4500] hover:bg-[#FF4500]/80 w-[120px] h-[40px]"
                     >
-                      <Reddit className="mr-2" />
+                      <Share2 className="mr-2" />
                       Reddit
                     </Button>
                     <Button 
