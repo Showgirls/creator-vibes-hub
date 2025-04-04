@@ -58,7 +58,7 @@ const Models = () => {
                 Seamless, fast, and fair—more money for creators, unlimited content for for subs!. Just FkiTT!
               </p>
               
-              <Link to="/register">
+              <Link to="/member-area">
                 <Button size="lg" className="bg-[#f9166f] hover:bg-[#f9166f]/80 text-white font-bold py-3 px-8 rounded-md">
                   Sign Up Now
                 </Button>
