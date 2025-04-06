@@ -32,7 +32,7 @@ const Token = () => {
                   GET STARTED
                 </Button>
               </a>
-              <a href="https://fkitt.com/token/buy" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+              <a href="https://fkitt.com/ftoken/buy" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
                 <Button 
                   size="lg" 
                   variant="outline" 
@@ -62,7 +62,7 @@ const Token = () => {
                   GET STARTED
                 </Button>
               </a>
-              <a href="https://fkitt.com/token/buy" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+              <a href="https://fkitt.com/ftoken/buy" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
                 <Button 
                   size="lg" 
                   variant="outline" 
@@ -83,7 +83,7 @@ const Token = () => {
               Getting access to FkiTT is quick and easy! First, purchase Solana (SOL) from your preferred exchange with your local currency such as Binance, Coinbase or other. Next, download and set up a Phantom Wallet <a href="https://phantom.com" target="_blank" rel="noopener noreferrer" className="text-[#f9166f] hover:underline">Get Phantom Wallet here</a>. Once set up, log in with Phantom and swap SOL for $FkiTT tokens on the DEX. Finally, use your $FkiTT tokens to pay for your membership and unlock unlimited access to all creators!
             </p>
             <div className="flex justify-start mt-6">
-              <a href="https://fkitt.com/token/buy" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+              <a href="https://fkitt.com/ftoken/buy" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-[180px] bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
                   BUY $FkiTT NOW
                 </Button>
@@ -117,12 +117,12 @@ const Token = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row justify-start gap-4 mt-6">
-              <a href="https://fkitt.com/token/contract" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+              <a href="https://fkitt.com/ftoken/contract" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-[180px] bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
                   CONTRACT
                 </Button>
               </a>
-              <a href="https://fkitt.com/token/buy" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+              <a href="https://fkitt.com/ftoken/buy" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
                 <Button 
                   size="lg" 
                   variant="outline" 
@@ -148,7 +148,7 @@ const Token = () => {
               around the FkITT Token.
             </p>
             <div className="flex justify-start">
-              <a href="https://fkitt.com/token/paper" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+              <a href="https://fkitt.com/ftoken/paper.pdf" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-[180px] bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 text-base sm:text-lg h-auto">
                   MORE INFO
                 </Button>
