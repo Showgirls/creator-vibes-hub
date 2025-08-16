@@ -1,109 +1,108 @@
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { signUp, useAuthCheck } from "@/hooks/useSupabaseAuth";
+import { connectWallet, signInWithWallet, useWalletAuth } from "@/hooks/useWalletAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Wallet } from "lucide-react";
 
-// Signup form schema
-const signupSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string(),
-  age: z.boolean().refine((val) => val === true, {
-    message: "You must confirm that you are 18 or older",
-  }),
-  terms: z.boolean().refine((val) => val === true, {
-    message: "You must accept the Terms of Service and Privacy Policy",
-  }),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
-
-interface IndexProps {
-  isRegister?: boolean;
-}
-
-const Index = ({ isRegister = false }: IndexProps) => {
+const Index = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [referredBy, setReferredByState] = useState<string | null>(null);
-  const [registrationError, setRegistrationError] = useState<string | null>(null);
+  const [registerError, setRegisterError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [username, setUsername] = useState("");
+  const [confirmAge, setConfirmAge] = useState(false);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [showUsernameForm, setShowUsernameForm] = useState(false);
   const isMobile = useIsMobile();
+  
+  const { isAuthenticated, isChecking } = useWalletAuth();
 
-  const { isAuthenticated, isChecking } = useAuthCheck();
-
-  // Check for referral in URL and if user is logged in
+  // Check if user is already logged in
   useEffect(() => {
     if (!isChecking && isAuthenticated) {
       navigate("/member-area");
+    }
+  }, [isAuthenticated, isChecking, navigate]);
+
+  const handleWalletConnect = async () => {
+    if (!confirmAge) {
+      toast.error("Please confirm that you are over 18 years old");
       return;
     }
-    
-    // Check URL for referral code
-    const urlParams = new URLSearchParams(location.search);
-    const ref = urlParams.get('ref');
-    
-    if (ref) {
-      console.log('Setting referral from URL:', ref);
-      setReferredByState(ref);
-    }
-  }, [isAuthenticated, isChecking, location, navigate]);
 
-  const signupForm = useForm<z.infer<typeof signupSchema>>({
-    resolver: zodResolver(signupSchema),
-    defaultValues: {
-      username: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      age: false,
-      terms: false,
-    },
-  });
-
-  const onSignupSubmit = async (values: z.infer<typeof signupSchema>) => {
-    // Reset any previous error
-    setRegistrationError(null);
+    setRegisterError(null);
     setIsLoading(true);
     
     try {
-      console.log("Attempting to register user:", values.username);
+      // First connect wallet
+      const connectResult = await connectWallet();
       
-      // Register the new user
-      const result = await signUp(values.username, values.email, values.password);
+      if (!connectResult.success) {
+        setRegisterError(connectResult.error || "Failed to connect wallet");
+        toast.error(connectResult.error || "Failed to connect wallet");
+        return;
+      }
       
-      if (result.success) {
-        console.log("Registration successful for:", values.username);
-        toast.success("Account created successfully! Please check your email to verify your account.");
-        // Don't redirect immediately, let them verify email first
+      const walletAddr = connectResult.walletAddress!;
+      setWalletAddress(walletAddr);
+      
+      // Check if wallet already has an account
+      const result = await signInWithWallet(walletAddr);
+      
+      if (result.success && !result.isNewUser) {
+        toast.success("Welcome back! Logging you in...");
+        navigate("/member-area");
+      } else if (result.needsUsername) {
+        setShowUsernameForm(true);
+        toast.info("Please choose a username for your new account");
+      } else if (result.success && result.isNewUser) {
+        toast.success("Account created successfully!");
+        navigate("/member-area");
       } else {
-        console.error("Registration failed:", result.error);
-        setRegistrationError(result.error || "Registration failed");
-        toast.error(result.error || "Registration failed");
+        setRegisterError(result.error || "Failed to connect");
+        toast.error(result.error || "Failed to connect");
       }
     } catch (e) {
-      console.error('Error during registration:', e);
-      setRegistrationError("An error occurred during registration");
-      toast.error("An error occurred during registration");
+      console.error('Error during wallet connection:', e);
+      setRegisterError("An error occurred during wallet connection");
+      toast.error("An error occurred during wallet connection");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUsernameSubmit = async () => {
+    if (!username.trim()) {
+      toast.error("Please enter a username");
+      return;
+    }
+    
+    if (!walletAddress) {
+      toast.error("Wallet not connected");
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const result = await signInWithWallet(walletAddress, username);
+      
+      if (result.success) {
+        toast.success("Account created successfully!");
+        navigate("/member-area");
+      } else {
+        setRegisterError(result.error || "Failed to create account");
+        toast.error(result.error || "Failed to create account");
+      }
+    } catch (e) {
+      console.error('Error creating account:', e);
+      setRegisterError("An error occurred while creating account");
+      toast.error("An error occurred while creating account");
     } finally {
       setIsLoading(false);
     }
@@ -118,139 +117,98 @@ const Index = ({ isRegister = false }: IndexProps) => {
           className={`mb-8 ${isMobile ? "h-16 w-auto" : "h-24 w-auto"}`}
         />
         <div className="w-full max-w-md space-y-8 glass-card p-8 rounded-lg">
-          {referredBy && (
-            <div className="bg-[#f9166f]/10 p-3 rounded-md border border-[#f9166f]/30 mb-4">
-              <p className="text-sm text-white">You were referred by: <span className="font-semibold">{referredBy}</span></p>
-            </div>
-          )}
-          
-          {registrationError && (
-            <div className="bg-red-500/10 p-3 rounded-md border border-red-500/30 mb-4">
-              <p className="text-sm text-white">{registrationError}</p>
-            </div>
-          )}
-          
-          <div className="text-right mb-4">
-            <Link to="/login">
-              <Button variant="outline" className="border-[#f9166f] text-white hover:bg-[#f9166f]/10">
-                Member Login
-              </Button>
-            </Link>
+          <div className="text-center">
+            <h1 className="text-2xl font-bold">Join Creator Space</h1>
+            <p className="text-muted-foreground mt-2">Connect your Solana wallet to get started</p>
           </div>
-          <Form {...signupForm}>
-            <form
-              onSubmit={signupForm.handleSubmit(onSignupSubmit)}
-              className="space-y-6"
-            >
-              <FormField
-                control={signupForm.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Username</FormLabel>
-                    <FormControl>
-                      <Input placeholder="johndoe" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-white" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={signupForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="email@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-white" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={signupForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-white" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={signupForm.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white">Confirm Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-white" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={signupForm.control}
-                name="age"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="text-white">
-                        I confirm that I am 18 years or older
-                      </FormLabel>
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={signupForm.control}
-                name="terms"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="text-white">
-                        I accept the Terms of Service and Privacy Policy
-                      </FormLabel>
-                    </div>
-                  </FormItem>
-                )}
-              />
+          
+          {registerError && (
+            <div className="bg-red-500/10 p-3 rounded-md border border-red-500/30 mb-4">
+              <p className="text-sm text-white">{registerError}</p>
+            </div>
+          )}
+          
+          {!showUsernameForm ? (
+            <div className="space-y-6">
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="confirmAge"
+                  checked={confirmAge}
+                  onCheckedChange={(checked) => setConfirmAge(checked === true)}
+                />
+                <label htmlFor="confirmAge" className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  I confirm that I am over 18 years old
+                </label>
+              </div>
+              
               <Button 
-                type="submit" 
-                className="w-full"
-                disabled={isLoading}
+                onClick={handleWalletConnect}
+                className="w-full bg-[#f9166f] hover:bg-[#d01359] flex items-center gap-2"
+                disabled={isLoading || !confirmAge}
+              >
+                <Wallet className="h-4 w-4" />
+                {isLoading ? "Connecting..." : "Connect Solana Wallet"}
+              </Button>
+              
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  New to Solana wallets?{" "}
+                  <a 
+                    href="https://phantom.app/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Get Phantom Wallet
+                  </a>
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium mb-2">Choose a Username</label>
+                <Input 
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <Button 
+                onClick={handleUsernameSubmit}
+                className="w-full bg-[#f9166f] hover:bg-[#d01359]"
+                disabled={isLoading || !username.trim()}
               >
                 {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
-            </form>
-          </Form>
-
-          <div className="text-center">
-            <Link to="/login">
-              <Button
-                variant="link"
-                className="text-white"
+              <Button 
+                onClick={() => {
+                  setShowUsernameForm(false);
+                  setWalletAddress(null);
+                  setUsername("");
+                }}
+                variant="outline"
+                className="w-full"
               >
-                Already have an account? Login
+                Back
               </Button>
-            </Link>
+            </div>
+          )}
+
+          <div className="text-center mt-4">
+            <p className="text-sm text-muted-foreground">
+              Already have an account?{" "}
+              <Link to="/login">
+                <Button
+                  variant="link"
+                  className="text-primary p-0"
+                >
+                  Log in
+                </Button>
+              </Link>
+            </p>
           </div>
         </div>
       </div>

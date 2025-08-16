@@ -164,7 +164,7 @@ const Home = () => {
           <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mt-4">
             <Link to="/" className="w-full sm:w-auto flex-1">
               <Button size="lg" className="w-full bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 sm:py-6 text-base sm:text-lg h-auto">
-                Sign Up Now
+                Connect Wallet & Sign Up
               </Button>
             </Link>
             <Link to="/login" className="w-full sm:w-auto flex-1">
@@ -173,7 +173,7 @@ const Home = () => {
                 variant="outline" 
                 className="w-full border-[#f9166f] text-white hover:bg-[#f9166f]/10 px-4 sm:px-8 py-4 sm:py-6 text-base sm:text-lg h-auto"
               >
-                Member Login
+                Connect Wallet & Login
               </Button>
             </Link>
           </div>
@@ -206,7 +206,7 @@ const Home = () => {
             <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mt-6 sm:mt-8">
               <Link to="/" className="w-full sm:w-auto flex-1">
                 <Button size="lg" className="w-full bg-[#f9166f] hover:bg-[#d01359] text-white px-4 sm:px-8 py-4 sm:py-6 text-base sm:text-lg h-auto">
-                  Sign Up Now
+                  Connect Wallet & Sign Up
                 </Button>
               </Link>
               <Link to="/token" className="w-full sm:w-auto flex-1">

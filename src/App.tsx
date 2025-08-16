@@ -8,8 +8,6 @@ import ScrollToTop from "./components/ScrollToTop";
 import Home from "./pages/Home";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Token from "./pages/Token";
@@ -37,8 +35,6 @@ const App = () => (
           <Route path="/home" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Index />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/token" element={<Token />} />
           <Route path="/member-area" element={<MemberArea />} />

@@ -6,10 +6,13 @@ import { Link } from "react-router-dom";
 import { Twitter, Mail, Copy, Check, ExternalLink, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useAuthCheck, signOut } from "@/hooks/useSupabaseAuth";
+import { signOut, useWalletUser } from "@/hooks/useWalletAuth";
+
+import { useWalletAuth } from "@/hooks/useWalletAuth";
 
 const MemberArea = () => {
-  const { user, profile, isAuthenticated, isChecking } = useAuthCheck();
+  const { user, profile, walletAddress } = useWalletUser();
+  const { isAuthenticated, isChecking } = useWalletAuth();
   const [copied, setCopied] = useState(false);
   const [showLimitedOfferDialog, setShowLimitedOfferDialog] = useState(false);
   const [referralStats, setReferralStats] = useState({

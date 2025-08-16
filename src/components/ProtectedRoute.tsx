@@ -1,13 +1,13 @@
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { useAuthCheck } from "@/hooks/useSupabaseAuth";
+import { useWalletAuth } from "@/hooks/useWalletAuth";
 
 interface ProtectedRouteProps {
   children: ReactNode;
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isAuthenticated, isChecking } = useAuthCheck();
+  const { isAuthenticated, isChecking } = useWalletAuth();
 
   if (isChecking) {
     return (
