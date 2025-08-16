@@ -186,7 +186,7 @@ export const signOut = async () => {
 
 // Custom hook to get and update current user
 export const useWalletUser = () => {
-  const { user, profile, walletAddress } = useWalletAuth();
+  const { user, profile, walletAddress, isAuthenticated, isChecking } = useWalletAuth();
   
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!user) return { success: false, error: "Not authenticated" };
@@ -211,6 +211,8 @@ export const useWalletUser = () => {
     user,
     profile,
     walletAddress,
+    isAuthenticated,
+    isChecking,
     updateProfile
   };
 };

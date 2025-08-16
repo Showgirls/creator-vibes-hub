@@ -8,11 +8,8 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { signOut, useWalletUser } from "@/hooks/useWalletAuth";
 
-import { useWalletAuth } from "@/hooks/useWalletAuth";
-
 const MemberArea = () => {
-  const { user, profile, walletAddress } = useWalletUser();
-  const { isAuthenticated, isChecking } = useWalletAuth();
+  const { user, profile, walletAddress, isAuthenticated, isChecking } = useWalletUser();
   const [copied, setCopied] = useState(false);
   const [showLimitedOfferDialog, setShowLimitedOfferDialog] = useState(false);
   const [referralStats, setReferralStats] = useState({
