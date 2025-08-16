@@ -6,9 +6,10 @@ import { Link } from "react-router-dom";
 import { Twitter, Mail, Copy, Check, ExternalLink, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { getReferralStats } from "@/hooks/useAuth";
+import { useAuthCheck, signOut } from "@/hooks/useSupabaseAuth";
 
 const MemberArea = () => {
+  const { user, profile, isAuthenticated, isChecking } = useAuthCheck();
   const [copied, setCopied] = useState(false);
   const [showLimitedOfferDialog, setShowLimitedOfferDialog] = useState(false);
   const [referralStats, setReferralStats] = useState({
@@ -16,7 +17,23 @@ const MemberArea = () => {
     earnings: 0
   });
   const [isPremium, setIsPremium] = useState(false);
-  const username = "demo-user"; // Default username for static display
+  
+  // Show loading while checking auth
+  if (isChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    window.location.href = '/login';
+    return null;
+  }
+  
+  const username = profile?.username || user?.email || "Member";
   
   // Countdown timer state
   const [timeLeft, setTimeLeft] = useState({
@@ -26,11 +43,15 @@ const MemberArea = () => {
     seconds: 0
   });
   
-  // Check localStorage for premium status on initial load
-  useEffect(() => {
-    const premiumStatus = localStorage.getItem("isPremiumMember") === "true";
-    setIsPremium(premiumStatus);
-  }, []);
+  const handleLogout = async () => {
+    const result = await signOut();
+    if (result.success) {
+      toast.success("Logged out successfully");
+      window.location.href = '/login';
+    } else {
+      toast.error("Error logging out");
+    }
+  };
   
   // Countdown timer effect
   useEffect(() => {
@@ -121,23 +142,32 @@ const MemberArea = () => {
     <div className="min-h-screen flex flex-col">
       <div className="flex-1 bg-background">
         <div className="container mx-auto px-4 py-12">
-          <div className="flex justify-between items-center mb-8">
-            <div className="flex items-center">
-              <img 
-                src="/lovable-uploads/ed9037d0-d55e-4bd5-b525-febf2587d57b.png" 
-                alt="FkiTT Logo" 
-                className="h-12 md:h-16"
-              />
+            <div className="flex justify-between items-center mb-8">
+              <div className="flex items-center">
+                <img 
+                  src="/lovable-uploads/ed9037d0-d55e-4bd5-b525-febf2587d57b.png" 
+                  alt="FkiTT Logo" 
+                  className="h-12 md:h-16"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Link to="/">
+                  <Button 
+                    variant="outline" 
+                    className="border-[#f9166f] text-white hover:bg-[#f9166f]/10"
+                  >
+                    Back to Home
+                  </Button>
+                </Link>
+                <Button 
+                  onClick={handleLogout}
+                  variant="outline" 
+                  className="border-red-500 text-red-500 hover:bg-red-500/10"
+                >
+                  Logout
+                </Button>
+              </div>
             </div>
-            <Link to="/">
-              <Button 
-                variant="outline" 
-                className="border-[#f9166f] text-white hover:bg-[#f9166f]/10"
-              >
-                Back to Home
-              </Button>
-            </Link>
-          </div>
 
           {/* Limited Offer Countdown Banner */}
           <div className="mb-8 px-6 py-4 rounded-lg bg-gradient-to-r from-[#f9166f]/30 to-[#f9166f]/10 border border-[#f9166f]/30">

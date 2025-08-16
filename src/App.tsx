@@ -6,6 +6,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
 import Home from "./pages/Home";
+import Index from "./pages/Index";
+import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Token from "./pages/Token";
@@ -29,7 +33,12 @@ const App = () => (
       <BrowserRouter>
         <ScrollToTop />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Index />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Index />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/token" element={<Token />} />
           <Route path="/member-area" element={<MemberArea />} />
@@ -41,8 +50,6 @@ const App = () => (
           <Route path="/anti-trafficking" element={<AntiTraffickingStatement />} />
           <Route path="/fan-creator-contract" element={<FanCreatorContract />} />
           <Route path="/complaints" element={<ComplaintsPolicy />} />
-          <Route path="/login" element={<Navigate to="/" replace />} />
-          <Route path="/register" element={<Navigate to="/" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

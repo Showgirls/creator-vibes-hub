@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { loginUser, getAllUsers, getCurrentUser } from "@/hooks/useAuth";
+import { signIn, useAuthCheck } from "@/hooks/useSupabaseAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { UserCircle, Lock } from "lucide-react";
 
@@ -33,18 +33,14 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const isMobile = useIsMobile();
   
+  const { isAuthenticated, isChecking } = useAuthCheck();
+
   // Check if user is already logged in
   useEffect(() => {
-    const checkUser = async () => {
-      const currentUser = await getCurrentUser();
-      if (currentUser) {
-        // If user is already logged in, redirect to member area
-        navigate("/member-area");
-      }
-    };
-    
-    checkUser();
-  }, [navigate]);
+    if (!isChecking && isAuthenticated) {
+      navigate("/member-area");
+    }
+  }, [isAuthenticated, isChecking, navigate]);
   
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -63,7 +59,7 @@ const Login = () => {
       console.log("Login attempt for user:", values.username);
       
       // Attempt to log in the user
-      const result = await loginUser(values.username, values.password);
+      const result = await signIn(values.username, values.password);
       
       if (result.success) {
         console.log(`User ${values.username} logged in successfully`);
@@ -83,20 +79,8 @@ const Login = () => {
     }
   };
 
-  // For debugging - will show available users in development mode
-  const debugUsers = async () => {
-    try {
-      const users = await getAllUsers();
-      console.log("Available users:", users);
-      if (Object.keys(users).length === 0) {
-        toast.info("No users registered yet. Please register first.");
-      } else {
-        toast.info(`Available users: ${Object.keys(users).join(', ')}`);
-      }
-    } catch (error) {
-      console.error("Error accessing users:", error);
-      toast.error("Error accessing user data");
-    }
+  const handleForgotPassword = () => {
+    navigate("/forgot-password");
   };
 
   return (
@@ -169,9 +153,10 @@ const Login = () => {
                   type="button" 
                   variant="ghost" 
                   size="sm" 
-                  onClick={debugUsers}
+                  onClick={handleForgotPassword}
+                  className="text-primary"
                 >
-                  Show Available Users
+                  Forgot Password?
                 </Button>
               </div>
             </form>
