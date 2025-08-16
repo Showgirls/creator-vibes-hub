@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -15,7 +14,6 @@ export interface UserProfile {
 
 // Wallet auth check hook
 export const useWalletAuth = () => {
-  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [user, setUser] = useState<User | null>(null);
