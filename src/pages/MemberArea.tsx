@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Footer from "@/components/Footer";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Twitter, Mail, Copy, Check, ExternalLink, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -29,8 +29,7 @@ const MemberArea = () => {
   
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    window.location.href = '/login';
-    return null;
+    return <Navigate to="/login" replace />;
   }
   
   const username = profile?.username || user?.email || "Member";
@@ -47,7 +46,7 @@ const MemberArea = () => {
     const result = await signOut();
     if (result.success) {
       toast.success("Logged out successfully");
-      window.location.href = '/login';
+      // Let the auth state change handle the redirect
     } else {
       toast.error("Error logging out");
     }
