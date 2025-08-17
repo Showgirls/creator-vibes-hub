@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -20,6 +20,26 @@ export const useWalletAuth = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  
+  const fetchUserProfile = useCallback(async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+
+      setProfile(data);
+      setWalletAddress(data?.wallet_address || null);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  }, []);
   
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -57,27 +77,7 @@ export const useWalletAuth = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
-
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return;
-      }
-
-      setProfile(data);
-      setWalletAddress(data?.wallet_address || null);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
+  }, [fetchUserProfile]);
   
   return { isAuthenticated, isChecking, user, session, profile, walletAddress };
 };
